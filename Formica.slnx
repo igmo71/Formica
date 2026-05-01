@@ -1,0 +1,7 @@
+<Solution>
+  <Project Path="Formica.ApiService/Formica.ApiService.csproj" />
+  <Project Path="Formica.AppHost/Formica.AppHost.csproj" />
+  <Project Path="Formica.ServiceDefaults/Formica.ServiceDefaults.csproj" />
+  <Project Path="Formica.Tests/Formica.Tests.csproj" />
+  <Project Path="Formica.Web/Formica.Web.csproj" />
+</Solution>
