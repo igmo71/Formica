@@ -291,12 +291,14 @@ Formica.Web/
     └── WarehouseFoundation/
         ├── Pages/
         ├── Components/
-        └── Clients/
+        └── ApiClients/
 
 Formica.Tests/
 └── Warehouse/
     └── WarehouseFoundation/
 ```
+
+`ApiClients` are typed wrappers used by the Blazor UI to call `Formica.ApiService` endpoints. They are UI-facing HTTP access helpers, not domain services, integration clients, or business entities.
 
 `Formica.AppHost` should be updated only if the selected persistence provider or other Aspire-managed resources require orchestration changes.
 
