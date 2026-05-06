@@ -61,13 +61,15 @@ As a warehouse administrator, I want to maintain basic SKU references, so that f
 
 **Why this priority**: Warehouse structure alone is not enough for inventory workflows. Future stock balances and movements need stable SKU references.
 
-**Independent Test**: A user can create a SKU reference with a unique code, name, base unit of measure, optional barcode, and active status.
+**Independent Test**: A user can create a SKU reference with a unique code, name, base unit of measure, one or more optional barcode values, and active status.
 
 **Acceptance Scenarios**:
 
 1. **Given** no SKU exists with a code, **When** the warehouse administrator creates a SKU reference with code, name, and base unit of measure, **Then** the SKU is available for future warehouse workflows.
 2. **Given** a SKU code already exists, **When** the warehouse administrator attempts to create another SKU with the same code, **Then** the system rejects the duplicate.
 3. **Given** a SKU is no longer used operationally, **When** the warehouse administrator marks it inactive, **Then** the SKU remains visible as a reference but is not treated as an active operational choice.
+4. **Given** a SKU has one barcode value, **When** the warehouse administrator adds another barcode value to the same SKU, **Then** the system allows multiple barcode values for that SKU.
+5. **Given** a barcode value already belongs to an existing SKU reference, **When** the warehouse administrator attempts to assign the same barcode value to another SKU reference, **Then** the system rejects the duplicate barcode value.
 
 ---
 
@@ -121,11 +123,12 @@ As a system stakeholder, I want the warehouse foundation to maintain stable refe
 - **FR-015**: Each SKU reference MUST have a human-readable name.
 - **FR-016**: Each SKU reference MUST have a base unit of measure.
 - **FR-017**: A SKU reference MAY have one or more optional barcode values.
-- **FR-018**: The system MUST allow SKU references to be marked active or inactive.
-- **FR-019**: The system MUST allow an operations manager to view the warehouse structure as warehouse → zone → storage locations.
-- **FR-020**: The warehouse structure view MUST show location addresses and active/inactive status.
-- **FR-021**: The system MUST keep stable references for warehouses, zones, storage locations, and SKUs so future inventory workflows can refer to them safely.
-- **FR-022**: The system MUST prevent duplicate warehouse codes, duplicate SKU codes, duplicate zone codes within a warehouse, and duplicate location addresses within a warehouse.
+- **FR-018**: Barcode values, when provided, MUST be unique across all SKU references unless a future feature explicitly defines barcode reuse or aliasing rules.
+- **FR-019**: The system MUST allow SKU references to be marked active or inactive.
+- **FR-020**: The system MUST allow an operations manager to view the warehouse structure as warehouse → zone → storage locations.
+- **FR-021**: The warehouse structure view MUST show location addresses and active/inactive status.
+- **FR-022**: The system MUST keep stable references for warehouses, zones, storage locations, and SKUs so future inventory workflows can refer to them safely.
+- **FR-023**: The system MUST prevent duplicate warehouse codes, duplicate SKU codes, duplicate zone codes within a warehouse, duplicate location addresses within a warehouse, and duplicate barcode values across SKU references.
 
 ### Non-Goals / Out of Scope
 
@@ -159,6 +162,7 @@ The Warehouse Foundation feature MUST NOT implement:
 - **Storage Location**: An addressable warehouse place where stock can be stored or processed.
 - **Location Address**: A human-readable or scannable code identifying a storage location within a warehouse.
 - **SKU**: The primary warehouse-operational identity of stock.
+- **SKU Barcode**: A barcode value associated with a SKU reference. A SKU may have multiple barcode values.
 - **Unit of Measure**: A quantity unit used for stock operations.
 
 ## Success Criteria
@@ -166,9 +170,9 @@ The Warehouse Foundation feature MUST NOT implement:
 ### Measurable Outcomes
 
 - **SC-001**: A warehouse administrator can configure at least one complete warehouse structure consisting of one warehouse, multiple zones, and multiple storage locations.
-- **SC-002**: The system prevents duplicate warehouse codes, duplicate SKU codes, duplicate zone codes within the same warehouse, and duplicate location addresses within the same warehouse.
+- **SC-002**: The system prevents duplicate warehouse codes, duplicate SKU codes, duplicate zone codes within the same warehouse, duplicate location addresses within the same warehouse, and duplicate barcode values across SKU references.
 - **SC-003**: An operations manager can view the configured warehouse structure in a way that clearly shows warehouse, zone, storage location, address, and active/inactive status.
-- **SC-004**: A warehouse administrator can create basic SKU references with code, name, base unit of measure, optional barcode, and active/inactive status.
+- **SC-004**: A warehouse administrator can create basic SKU references with code, name, base unit of measure, one or more optional barcode values, and active/inactive status.
 - **SC-005**: Future inventory specifications can refer to warehouses, storage locations, and SKUs without redefining these concepts.
 
 ## Assumptions
@@ -177,16 +181,18 @@ The Warehouse Foundation feature MUST NOT implement:
 - Location addresses are unique within a warehouse, not globally.
 - Zone codes are unique within a warehouse, not globally.
 - SKU codes are globally unique within Formica Warehouse unless a later feature specification changes this assumption.
-- Zone and storage location classifications are required, but their exact values will be clarified before planning.
-- Location addressing must be configurable, but the exact address model will be clarified before planning.
+- A SKU may have multiple barcode values, reflecting practical catalog and 1C-style nomenclature scenarios.
+- Barcode values are unique across all SKU references unless a future feature explicitly defines barcode reuse or aliasing rules.
 - Full Product Catalog is out of scope; the first milestone requires only basic SKU references.
 - Russian UI labels may use user-friendly business wording later, but the domain language for specifications remains based on the glossary.
 
-## Clarifications Needed
+## Clarifications
 
-- **CN-001**: Define the minimum configurable location address model. Possible dimensions may include zone, aisle, rack, level, position, or a simpler custom pattern.
-- **CN-002**: Define initial zone purpose/type values.
-- **CN-003**: Define initial storage location purpose/type values.
-- **CN-004**: Confirm whether SKU barcode values must be unique globally, unique per SKU, or optional non-validated references for the first milestone.
-- **CN-005**: Confirm whether inactive warehouses, zones, locations, and SKUs can be reactivated.
-- **CN-006**: Confirm whether storage locations require capacity attributes in the first milestone, such as volume, weight limit, or dimensional information.
+### Session 2026-05-06
+
+- **CN-001**: Location addresses use user-defined address codes validated by configurable warehouse-level address rules. The first milestone does not require a fixed aisle/rack/level/position model.
+- **CN-002**: Initial zone purpose/type values are: Storage, Receiving, Shipping, Picking, Packing, Staging, QualityControl, Quarantine, Other.
+- **CN-003**: Initial storage location purpose/type values are: Storage, Picking, Staging, Receiving, Shipping, Packing, QualityControl, Quarantine, Other.
+- **CN-004**: A SKU may have multiple barcode values. Barcode values, when provided, must be unique across all SKU references unless a future feature explicitly defines barcode reuse or aliasing rules.
+- **CN-005**: Inactive warehouses, zones, storage locations, and SKUs can be reactivated if they still satisfy uniqueness and validation rules.
+- **CN-006**: Storage locations may have optional capacity attributes for future use, but Warehouse Foundation does not calculate capacity consumption, suitability, slotting, or optimization.
