@@ -16,7 +16,7 @@ The feature establishes the operational foundation for future warehouse workflow
 - basic SKU references;
 - SKU barcode references;
 - active/inactive lifecycle;
-- basic warehouse structure visibility.
+- basic warehouse layout visibility.
 
 The implementation approach is a pragmatic modular monolith using the existing Aspire Starter App solution:
 
@@ -31,8 +31,8 @@ The feature must not implement full inventory accounting, receiving, putaway, ou
 ## Technical Context
 
 **Language/Version**: C# / .NET 10  
-**Primary Dependencies**: ASP.NET Core, Aspire 13.2.4, Blazor, EF Core to be added for persistence, OpenTelemetry baseline through ServiceDefaults  
-**Storage**: Relational persistence through EF Core; concrete provider to be selected during Phase 0 research before implementation tasks  
+**Primary Dependencies**: ASP.NET Core, Aspire 13.2.4, Blazor, EF Core, Npgsql EF Core provider, OpenTelemetry baseline through ServiceDefaults  
+**Storage**: PostgreSQL through EF Core/Npgsql  
 **Testing**: `Formica.Tests` using xUnit v3, Microsoft.NET.Test.Sdk, Aspire.Hosting.Testing, coverlet collector  
 **Target Platform**: Server-side web application with Web API and Blazor UI, developed and run through Aspire AppHost  
 **Project Type**: Modular monolith web application with separate API and UI surfaces  
@@ -93,7 +93,7 @@ Business rules should remain independent from UI, HTTP, and persistence. Additio
 
 Status: PASS.
 
-Implementation should be organized around feature capabilities such as warehouse management, zone management, storage location management, SKU reference management, and warehouse structure viewing.
+Implementation should be organized around feature capabilities such as warehouse management, zone management, storage location management, SKU reference management, and warehouse layout viewing.
 
 ### VI. DDD-Oriented Design
 
@@ -117,7 +117,7 @@ Plan includes validation strategy and tests for acceptance criteria. Operational
 
 Status: PASS.
 
-Use built-in .NET, ASP.NET Core, Blazor, EF Core, and Aspire capabilities by default. Do not introduce MediatR, external validation frameworks, mapping frameworks, or additional UI libraries unless justified later.
+Use built-in .NET, ASP.NET Core, Blazor, EF Core, Npgsql, and Aspire capabilities by default. Do not introduce MediatR, external validation frameworks, mapping frameworks, or additional UI libraries unless justified later.
 
 ### X. Human-Readable Project Memory
 
@@ -133,7 +133,7 @@ Warehouse Foundation will use the current solution baseline:
 
 - API behavior in `Formica.ApiService`;
 - Blazor UI behavior in `Formica.Web`;
-- orchestration in `Formica.AppHost` if persistence or supporting resources are added;
+- orchestration in `Formica.AppHost` for PostgreSQL and supporting resources;
 - shared telemetry/service defaults through `Formica.ServiceDefaults`;
 - tests in `Formica.Tests`.
 
@@ -168,7 +168,7 @@ The implementation should be grouped around independently testable capabilities:
 - create and maintain zones;
 - create and maintain storage locations and addresses;
 - create and maintain basic SKU references and barcode values;
-- view the warehouse structure.
+- view the warehouse layout.
 
 Rationale:
 
@@ -176,17 +176,17 @@ Rationale:
 - supports incremental implementation;
 - avoids horizontal service-layer ceremony.
 
-### TD-004: Use EF Core for relational persistence
+### TD-004: Use PostgreSQL through EF Core/Npgsql for relational persistence
 
-Warehouse Foundation requires durable storage for warehouses, zones, storage locations, address rules, SKU references, and barcode values. EF Core should be used for persistence.
+Warehouse Foundation requires durable storage for warehouses, zones, storage locations, address rules, SKU references, and barcode values. PostgreSQL should be used through EF Core and the Npgsql provider.
 
 Rationale:
 
-- aligns with the .NET/Aspire project direction;
-- supports relational uniqueness constraints;
-- keeps persistence implementation conventional and maintainable.
-
-The concrete provider is not present in the current project files and must be selected during Phase 0 research before implementation tasks are finalized.
+- aligns well with Aspire/container-based development;
+- provides mature EF Core support;
+- supports relational uniqueness constraints needed by the feature;
+- avoids unnecessary SQL Server/Windows coupling;
+- leaves room for future operational data, outbox/inbox, JSONB, and analytical scenarios.
 
 ### TD-005: Use explicit domain concepts but avoid over-modeling
 
@@ -283,7 +283,7 @@ Formica.ApiService/
         │   ├── Zones/
         │   ├── StorageLocations/
         │   ├── SkuReferences/
-        │   └── WarehouseStructure/
+        │   └── WarehouseLayout/
         └── Endpoints/
 
 Formica.Web/
@@ -298,9 +298,11 @@ Formica.Tests/
     └── WarehouseFoundation/
 ```
 
+`WarehouseLayout` is the read-oriented capability that presents the configured warehouse as warehouse → zone → storage locations. It is not a separate domain entity.
+
 `ApiClients` are typed wrappers used by the Blazor UI to call `Formica.ApiService` endpoints. They are UI-facing HTTP access helpers, not domain services, integration clients, or business entities.
 
-`Formica.AppHost` should be updated only if the selected persistence provider or other Aspire-managed resources require orchestration changes.
+`Formica.AppHost` should orchestrate PostgreSQL for local development and integration testing once persistence is added.
 
 `Formica.ServiceDefaults` should be reused for telemetry and service defaults; this feature should not introduce feature-specific observability infrastructure unless needed.
 
@@ -312,7 +314,7 @@ Research is required for decisions that remain open after this plan.
 
 Required research topics:
 
-1. Select the relational database provider for EF Core in the Aspire solution.
+1. Confirm PostgreSQL/Npgsql package and Aspire orchestration setup.
 2. Decide whether persistence is introduced directly in `Formica.ApiService` or through a small internal infrastructure grouping under the Warehouse feature area.
 3. Confirm Minimal API endpoint grouping conventions in `Formica.ApiService`.
 4. Confirm Blazor routing/component placement conventions in `Formica.Web`.
@@ -376,7 +378,7 @@ Expected contract groups:
 - zones;
 - storage locations;
 - SKU references;
-- warehouse structure view.
+- warehouse layout view.
 
 ### Quickstart Scope
 
@@ -388,7 +390,7 @@ Expected contract groups:
 4. verify duplicate prevention;
 5. create SKU references with multiple barcode values;
 6. verify duplicate barcode prevention;
-7. view warehouse structure;
+7. view warehouse layout;
 8. deactivate and reactivate configured references.
 
 ## Validation Strategy
@@ -405,7 +407,7 @@ Minimum validation coverage:
 - barcode value uniqueness across SKU references;
 - active/inactive lifecycle;
 - reactivation validation;
-- warehouse structure view behavior;
+- warehouse layout view behavior;
 - location address rule validation.
 
 Testing should focus on user-visible behavior and domain rules, not implementation details.
