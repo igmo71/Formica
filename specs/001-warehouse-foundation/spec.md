@@ -2,7 +2,7 @@
 
 **Feature Branch**: `001-warehouse-foundation`  
 **Created**: 2026-05-04  
-**Status**: Draft  
+**Status**: Ready for Planning  
 **Input**: Establish the first Formica Warehouse foundation feature. Users must be able to create warehouses, create warehouse zones, create storage locations, configure location addresses, maintain basic SKU references, view the basic warehouse structure, and prepare a stable base for future inventory workflows.
 
 ## User Scenarios & Testing
