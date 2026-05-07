@@ -22,7 +22,7 @@ It describes concepts, relationships, lifecycle rules, uniqueness constraints, v
 - Location Address
 - Location Address Rules
 - Storage Location Capacity
-- SKU Reference
+- SKU
 - SKU Barcode
 - Unit of Measure
 - lifecycle state
@@ -92,7 +92,7 @@ Reference entities with stable identity:
 - Warehouse
 - Zone
 - Storage Location
-- SKU Reference
+- SKU
 - SKU Barcode
 - Unit of Measure, if persisted as a reference entity
 
@@ -308,13 +308,13 @@ Optional capacity data for a storage location, intended for future use by putawa
 
 Capacity may be modeled as an owned/value-object-style concept rather than a separate independent entity.
 
-## SKU Reference
+## SKU
 
 ### Meaning
 
 The primary warehouse-operational identity of stock.
 
-SKU Reference is intentionally basic in this milestone. It is not a full Product Catalog.
+SKU in Warehouse Foundation is intentionally basic. It is not a full Product Catalog.
 
 ### Suggested Attributes
 
@@ -331,13 +331,13 @@ SKU Reference is intentionally basic in this milestone. It is not a full Product
 
 ### Relationships
 
-- SKU Reference has one Base Unit of Measure.
-- SKU Reference has zero or many SKU Barcodes.
+- SKU has one Base Unit of Measure.
+- SKU has zero or many SKU Barcodes.
 
 ### Invariants
 
 - SKU Code is required.
-- SKU Code is unique across all SKU References.
+- SKU Code is unique across all SKUs.
 - SKU Name is required.
 - Base Unit of Measure is required.
 - SKU identity remains stable when Code, Name, Base Unit of Measure, or barcode list changes.
@@ -345,13 +345,13 @@ SKU Reference is intentionally basic in this milestone. It is not a full Product
 
 ### Notes
 
-Product and SKU are distinct concepts. This feature models only basic SKU References. Full Product Catalog, Product/SKU hierarchy, Composite SKU/Kit behavior, supplier-specific packaging, and advanced unit conversion are deferred.
+Product and SKU are distinct concepts. This feature models only basic SKUs. Full Product Catalog, Product/SKU hierarchy, Composite SKU/Kit behavior, supplier-specific packaging, and advanced unit conversion are deferred.
 
 ## SKU Barcode
 
 ### Meaning
 
-A barcode value associated with a SKU Reference.
+A barcode value associated with a SKU.
 
 A SKU may have multiple barcode values, reflecting practical catalog and 1C-style nomenclature scenarios.
 
@@ -360,7 +360,7 @@ A SKU may have multiple barcode values, reflecting practical catalog and 1C-styl
 | Attribute | Required | Notes |
 |-----------|----------|-------|
 | Id | Yes | Stable technical identity if persisted as an entity. |
-| SkuReferenceId | Yes | Parent SKU Reference. |
+| SkuId | Yes | Parent SKU. |
 | Value | Yes | Barcode value. |
 | Description | No | Optional note, such as package or source. |
 | IsActive | Yes | Lifecycle flag, if barcode lifecycle is tracked independently. |
@@ -369,14 +369,14 @@ A SKU may have multiple barcode values, reflecting practical catalog and 1C-styl
 
 ### Relationships
 
-- SKU Barcode belongs to one SKU Reference.
+- SKU Barcode belongs to one SKU.
 
 ### Invariants
 
 - Barcode Value is required.
-- Barcode Value is unique across all SKU References unless a future feature explicitly defines barcode reuse or aliasing rules.
-- A SKU Reference may have multiple Barcode Values.
-- A Barcode Value must not point to multiple active SKU References.
+- Barcode Value is unique across all SKUs unless a future feature explicitly defines barcode reuse or aliasing rules.
+- A SKU may have multiple Barcode Values.
+- A Barcode Value must not point to multiple active SKUs.
 
 ### Notes
 
@@ -415,7 +415,7 @@ The first milestone may use a small seed/reference set for common units, such as
 - Unit Code is required.
 - Unit Code is unique.
 - Unit Name is required.
-- SKU Reference requires a Base Unit of Measure.
+- SKU requires a Base Unit of Measure.
 
 ### Notes
 
@@ -466,14 +466,14 @@ Warehouse
 └── Zones
     └── StorageLocations
 
-SkuReference
+SKU
 ├── BaseUnitOfMeasure
 └── SkuBarcodes
 ```
 
 Storage Location belongs to a Zone and is scoped to a Warehouse for uniqueness of Location Address.
 
-SKU Reference is independent from Warehouse in this milestone. Future inventory features will connect SKU, Warehouse, Storage Location, and stock state.
+SKU is independent from Warehouse in this milestone. Future inventory features will connect SKU, Warehouse, Storage Location, and stock state.
 
 ## Uniqueness Rules
 
@@ -482,8 +482,8 @@ SKU Reference is independent from Warehouse in this milestone. Future inventory 
 | Warehouse.Code | Global within Formica Warehouse |
 | Zone.Code | Unique within Warehouse |
 | StorageLocation.Address | Unique within Warehouse after normalization |
-| SkuReference.Code | Global within Formica Warehouse |
-| SkuBarcode.Value | Global across SKU References |
+| SKU.Code | Global within Formica Warehouse |
+| SkuBarcode.Value | Global across SKUs |
 | UnitOfMeasure.Code | Global within Formica Warehouse |
 
 ## Validation Rules
@@ -518,7 +518,7 @@ SKU Reference is independent from Warehouse in this milestone. Future inventory 
 
 - A SKU may have multiple barcodes.
 - Barcode value is required when a barcode is provided.
-- Barcode value must be unique across SKU References.
+- Barcode value must be unique across SKUs.
 
 ## Aggregate / Ownership Notes
 
@@ -528,7 +528,7 @@ Suggested ownership boundaries:
 
 - Warehouse owns its setup relationship to Zones and Location Address Rules conceptually.
 - Zone owns its relationship to Storage Locations conceptually.
-- SKU Reference owns its Barcode Values conceptually.
+- SKU owns its Barcode Values conceptually.
 - Unit of Measure may be a simple reference entity or controlled reference set.
 
 Implementation may use direct EF Core relationships and feature-level validation rather than complex aggregate roots if that keeps the first milestone simpler.
@@ -542,14 +542,14 @@ PostgreSQL/EF Core persistence should support at least these database-level cons
 - unique index on Warehouse Code;
 - unique index on Zone WarehouseId + Code;
 - unique index on Storage Location WarehouseId + normalized Address;
-- unique index on SKU Reference Code;
+- unique index on SKU Code;
 - unique index on SKU Barcode Value;
 - unique index on Unit of Measure Code, if persisted;
 - foreign key from Zone to Warehouse;
 - foreign key from Storage Location to Zone;
 - foreign key from Storage Location to Warehouse, if WarehouseId is stored directly;
-- foreign key from SKU Reference to Unit of Measure, if Unit of Measure is persisted;
-- foreign key from SKU Barcode to SKU Reference.
+- foreign key from SKU to Unit of Measure, if Unit of Measure is persisted;
+- foreign key from SKU Barcode to SKU.
 
 Database constraints do not replace user-friendly validation and error messages.
 
