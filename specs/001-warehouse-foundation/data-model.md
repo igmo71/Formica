@@ -442,7 +442,7 @@ WarehouseLayout
 ├── Warehouse summary
 ├── Zones
 │   └── Storage Locations
-└── Setup completeness indicators
+└── Setup readiness indicators
 ```
 
 ### Included Data
@@ -450,13 +450,29 @@ WarehouseLayout
 - Warehouse code, name, active/inactive state
 - Zone code, name, purpose, active/inactive state
 - Storage Location address, name, purpose, active/inactive state
-- Optional setup completeness indicators
+- Optional setup readiness indicators
+
+### Setup Readiness Indicators
+
+Setup readiness indicators are read-only signals that help a user understand whether the warehouse foundation is sufficiently configured for future warehouse workflows.
+
+Possible indicators include:
+
+- whether the warehouse has at least one zone;
+- whether the warehouse has at least one storage location;
+- whether the warehouse has at least one active storage location;
+- whether location address rules are configured;
+- whether zones exist without storage locations;
+- whether inactive zones or storage locations require attention.
+
+These indicators do not introduce a new domain entity or workflow state. They are derived from current Warehouse Foundation data.
 
 ### Invariants
 
 - Warehouse Layout must reflect current persisted Warehouse Foundation data.
 - Inactive records must be visible when relevant to setup verification.
 - A warehouse with no zones or storage locations must be represented clearly as incomplete setup.
+- Setup readiness indicators must be derived from persisted Warehouse Foundation data and must not be persisted as a separate aggregate.
 
 ## Relationship Summary
 
