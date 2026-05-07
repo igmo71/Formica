@@ -22,9 +22,11 @@ The implementation approach is a pragmatic modular monolith using the existing A
 
 - `Formica.AppHost` for Aspire orchestration;
 - `Formica.ServiceDefaults` for shared service defaults and observability baseline;
-- `Formica.ApiService` for the Web API surface;
+- `Formica.ApiService` for the Web API surface and initial backend host;
 - `Formica.Web` for the Blazor UI surface;
 - `Formica.Tests` for Aspire/xUnit-based tests.
+
+`Formica.ApiService` is the physical host/composition root for the first milestone, not the conceptual owner of Warehouse business logic. Warehouse backend logic must remain organized inside an extractable logical Warehouse boundary.
 
 The feature must not implement full inventory accounting, receiving, putaway, outbound, mobile workflows, 1C synchronization, or optimization. It must prepare stable references that future inventory workflows can use.
 
@@ -37,7 +39,7 @@ The feature must not implement full inventory accounting, receiving, putaway, ou
 **Target Platform**: Server-side web application with Web API and Blazor UI, developed and run through Aspire AppHost  
 **Project Type**: Modular monolith web application with separate API and UI surfaces  
 **Performance Goals**: Foundation administration workflows should remain responsive for ordinary warehouse setup data volumes; no high-throughput operational workflow is introduced by this feature  
-**Constraints**: Keep implementation simple; avoid MediatR and unnecessary third-party abstractions; preserve future compatibility with inventory workflows  
+**Constraints**: Keep implementation simple; avoid MediatR and unnecessary third-party abstractions; preserve future compatibility with inventory workflows; keep backend business logic extractable from `Formica.ApiService`  
 **Scale/Scope**: First milestone administrative foundation; expected to support multiple warehouses, zones, storage locations, and SKU references, but not high-volume operational transaction processing yet
 
 ## Existing Solution Baseline
@@ -81,13 +83,13 @@ The specification defines user-visible behavior and excludes implementation deta
 
 Status: PASS.
 
-The feature will be implemented inside the current Formica modular monolith solution. It will create an explicit Formica Warehouse boundary without introducing premature physical project proliferation.
+The feature will be implemented inside the current Formica modular monolith solution. It will create an explicit logical Formica Warehouse boundary without introducing premature physical project proliferation.
 
 ### IV. Clean Architecture without Ceremony
 
 Status: PASS.
 
-Business rules should remain independent from UI, HTTP, and persistence. Additional abstractions must be introduced only when they protect a real boundary or reduce concrete complexity.
+Business rules should remain independent from UI, HTTP, and persistence. `Formica.ApiService` is the host/API surface; Warehouse business behavior must stay inside logical module/feature code and remain extractable later.
 
 ### V. Vertical Slice Delivery
 
@@ -131,7 +133,8 @@ This plan references existing project memory and does not promote feature-specif
 
 Warehouse Foundation will use the current solution baseline:
 
-- API behavior in `Formica.ApiService`;
+- API host and composition in `Formica.ApiService`;
+- Warehouse backend logic inside a logical `Warehouse` boundary under `Formica.ApiService` for this milestone;
 - Blazor UI behavior in `Formica.Web`;
 - orchestration in `Formica.AppHost` for PostgreSQL and supporting resources;
 - shared telemetry/service defaults through `Formica.ServiceDefaults`;
@@ -142,6 +145,7 @@ Rationale:
 - aligns with the existing Aspire Starter App structure;
 - avoids premature new projects;
 - keeps the first milestone implementation approachable;
+- keeps Warehouse code extractable if a dedicated module project becomes justified later;
 - leaves room for future module extraction if Inventory, Inbound, Outbound, or Integrations grow.
 
 ### TD-002: Use a logical Formica Warehouse boundary first
@@ -150,15 +154,17 @@ Create an explicit logical feature/module boundary for Formica Warehouse inside 
 
 Expected logical grouping:
 
-- `Warehouse/WarehouseFoundation` under API-facing code;
+- `Warehouse/Persistence` under API-facing backend code for Warehouse-level persistence;
+- `Warehouse/WarehouseFoundation` under API-facing backend code for this feature/milestone;
 - `Warehouse/WarehouseFoundation` under Blazor UI code;
-- shared domain/application/persistence concepts grouped by feature area, not scattered globally.
+- domain/application/persistence concerns grouped by logical boundary, not scattered globally.
 
 Rationale:
 
 - keeps Formica Warehouse visible as the first product module;
 - supports modular monolith direction;
-- avoids extra assemblies before real complexity justifies them.
+- avoids extra assemblies before real complexity justifies them;
+- avoids placing a broad `WarehouseDbContext` inside the narrower `WarehouseFoundation` feature folder.
 
 ### TD-003: Use vertical slices for user-visible capabilities
 
@@ -275,9 +281,14 @@ Expected logical feature placement:
 ```text
 Formica.ApiService/
 └── Warehouse/
+    ├── Persistence/
+    │   ├── WarehouseDbContext.cs
+    │   ├── Configurations/
+    │   │   └── WarehouseFoundation/
+    │   └── Migrations/
+    │
     └── WarehouseFoundation/
         ├── Domain/
-        ├── Persistence/
         ├── Features/
         │   ├── Warehouses/
         │   ├── Zones/
@@ -306,7 +317,7 @@ Formica.Tests/
 
 `Formica.ServiceDefaults` should be reused for telemetry and service defaults; this feature should not introduce feature-specific observability infrastructure unless needed.
 
-**Structure Decision**: Implement Warehouse Foundation as a logical module/feature area inside the existing projects. Do not create `Formica.Modules.Warehouse` or other new projects for this milestone unless Phase 0 research finds a concrete need.
+**Structure Decision**: Implement Warehouse Foundation as a logical Warehouse module/feature area inside the existing projects. Do not create `Formica.Modules.Warehouse` or other new projects for this milestone unless Phase 0 research finds a concrete need.
 
 ## Phase 0: Research
 
@@ -315,7 +326,7 @@ Research is required for decisions that remain open after this plan.
 Required research topics:
 
 1. Confirm PostgreSQL/Npgsql package and Aspire orchestration setup.
-2. Decide whether persistence is introduced directly in `Formica.ApiService` or through a small internal infrastructure grouping under the Warehouse feature area.
+2. Confirm Warehouse-level persistence boundary under `Formica.ApiService/Warehouse/Persistence` and Warehouse Foundation feature boundary under `Formica.ApiService/Warehouse/WarehouseFoundation`.
 3. Confirm Minimal API endpoint grouping conventions in `Formica.ApiService`.
 4. Confirm Blazor routing/component placement conventions in `Formica.Web`.
 5. Confirm test style in `Formica.Tests`: integration-first through Aspire, domain tests, API behavior tests, or a pragmatic mix.
