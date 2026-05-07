@@ -3,7 +3,7 @@
 **Feature**: `001-warehouse-foundation`  
 **Spec**: `specs/001-warehouse-foundation/spec.md`  
 **Plan**: `specs/001-warehouse-foundation/plan.md`  
-**Date**: 2026-05-06
+**Date**: 2026-05-07
 
 ## Purpose
 
@@ -67,22 +67,42 @@ Formica.ApiService/
 
 Do not create a separate `Formica.Modules.Warehouse` project yet.
 
+### Meaning of Persistence
+
+In this feature, `Persistence` means the feature-scoped infrastructure responsible for durable storage and retrieval of Warehouse Foundation data.
+
+It may include:
+
+- EF Core `DbContext` or feature-specific DbContext grouping;
+- EF Core entity configurations;
+- migrations;
+- database constraint configuration;
+- PostgreSQL/Npgsql-specific setup needed by EF Core;
+- persistence helpers needed to implement feature behavior.
+
+It must not become a generic dumping ground for business rules, UI logic, endpoint definitions, or external integration code.
+
+Persistence is infrastructure, but it remains scoped to the Warehouse Foundation feature area instead of becoming a global infrastructure layer.
+
 ### Rationale
 
 - The constitution favors modular monolith first and Clean Architecture without ceremony.
 - Warehouse Foundation is the first milestone and does not yet justify physical module extraction.
 - Keeping persistence close to the feature area reduces navigation overhead.
 - A logical boundary is sufficient for the current scope.
+- Feature-scoped infrastructure keeps the persistence concern explicit without introducing a broad infrastructure project too early.
 
 ### Alternatives Considered
 
 - **Separate `Formica.Modules.Warehouse` project**: may become useful later, but premature for this milestone.
 - **Global shared persistence folder**: rejected because it would weaken the Formica Warehouse feature boundary.
+- **No explicit `Persistence` folder**: simpler at first, but rejected because EF Core mappings, migrations, and database constraints need a clear home.
 
 ### Consequences
 
 - Keep `DbContext`, EF configurations, migrations, and persistence helpers scoped to Warehouse Foundation or a clear Warehouse area.
 - Revisit physical module extraction when Inventory, Inbound, Outbound, or Integrations add real complexity.
+- Keep domain behavior outside persistence-specific classes unless it is purely persistence mapping or database constraint configuration.
 
 ## R-003: Minimal API Endpoint Grouping
 
