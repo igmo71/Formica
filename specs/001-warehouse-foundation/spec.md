@@ -89,11 +89,11 @@ As an operations manager, I want to view the warehouse structure by warehouse, z
 
 ---
 
-### User Story 6 - Prepare stable references for future inventory workflows (Priority: P2)
+### User Story 6 - Maintain stable references for future inventory workflows (Priority: P2)
 
-As a system stakeholder, I want the warehouse foundation to maintain stable references for warehouses, storage locations, and SKUs, so that future inventory balances and movements can safely refer to them.
+As a system stakeholder, I want the warehouse foundation to maintain stable references for warehouses, storage locations, and SKUs across create, update, deactivate, and reactivate operations, so that future inventory balances and movements can safely refer to them.
 
-**Why this priority**: The first milestone must not implement full inventory accounting, but it must avoid choices that would block future inventory workflows.
+**Why this priority**: The first milestone must not implement full inventory accounting, but it must avoid choices that would block future inventory workflows or destroy operational reference history.
 
 **Independent Test**: A configured warehouse structure and SKU list remain stable enough for future features to reference without relying on display names or manually interpreted text.
 
@@ -101,6 +101,8 @@ As a system stakeholder, I want the warehouse foundation to maintain stable refe
 
 1. **Given** a warehouse, storage location, or SKU is created, **When** its display name changes later, **Then** its identity remains stable for future workflows.
 2. **Given** a warehouse, zone, storage location, or SKU may be used by future operational records, **When** a user wants to stop using it, **Then** the system supports deactivation rather than forcing destructive removal.
+3. **Given** an inactive warehouse, zone, storage location, or SKU still satisfies uniqueness and validation rules, **When** the warehouse administrator reactivates it, **Then** the reference becomes active again without changing its stable identity.
+4. **Given** a user updates editable attributes of a warehouse, zone, storage location, or SKU, **When** the update passes validation, **Then** the system preserves the same stable identity and applies the changed attributes.
 
 ## Requirements
 
@@ -129,6 +131,10 @@ As a system stakeholder, I want the warehouse foundation to maintain stable refe
 - **FR-021**: The warehouse structure view MUST show location addresses and active/inactive status.
 - **FR-022**: The system MUST keep stable references for warehouses, zones, storage locations, and SKUs so future inventory workflows can refer to them safely.
 - **FR-023**: The system MUST prevent duplicate warehouse codes, duplicate SKU codes, duplicate zone codes within a warehouse, duplicate location addresses within a warehouse, and duplicate barcode values across SKU references.
+- **FR-024**: The system MUST allow users to update editable attributes of warehouses, zones, storage locations, and SKU references while preserving their stable identity.
+- **FR-025**: The system MUST use deactivation and reactivation as the primary lifecycle mechanism for operational reference data that may be used by future workflows.
+- **FR-026**: The system MUST NOT require physical deletion of warehouses, zones, storage locations, or SKU references for normal user workflows.
+- **FR-027**: If physical deletion is introduced later, it MUST be limited to reference records that have never been used by operational workflows or referenced by other records.
 
 ### Non-Goals / Out of Scope
 
@@ -174,6 +180,7 @@ The Warehouse Foundation feature MUST NOT implement:
 - **SC-003**: An operations manager can view the configured warehouse structure in a way that clearly shows warehouse, zone, storage location, address, and active/inactive status.
 - **SC-004**: A warehouse administrator can create basic SKU references with code, name, base unit of measure, one or more optional barcode values, and active/inactive status.
 - **SC-005**: Future inventory specifications can refer to warehouses, storage locations, and SKUs without redefining these concepts.
+- **SC-006**: A warehouse administrator can update, deactivate, and reactivate warehouse foundation records without changing their stable identity.
 
 ## Assumptions
 
@@ -185,6 +192,7 @@ The Warehouse Foundation feature MUST NOT implement:
 - Barcode values are unique across all SKU references unless a future feature explicitly defines barcode reuse or aliasing rules.
 - Full Product Catalog is out of scope; the first milestone requires only basic SKU references.
 - Russian UI labels may use user-friendly business wording later, but the domain language for specifications remains based on the glossary.
+- Operational reference data uses a lifecycle model where deactivation/reactivation is preferred over destructive deletion.
 
 ## Clarifications
 
@@ -196,3 +204,4 @@ The Warehouse Foundation feature MUST NOT implement:
 - **CN-004**: A SKU may have multiple barcode values. Barcode values, when provided, must be unique across all SKU references unless a future feature explicitly defines barcode reuse or aliasing rules.
 - **CN-005**: Inactive warehouses, zones, storage locations, and SKUs can be reactivated if they still satisfy uniqueness and validation rules.
 - **CN-006**: Storage locations may have optional capacity attributes for future use, but Warehouse Foundation does not calculate capacity consumption, suitability, slotting, or optimization.
+- **CN-007**: Warehouses, zones, storage locations, and SKUs use a lifecycle model: create, update, deactivate, and reactivate. Physical deletion is not the primary user operation. If deletion is supported later, it must be limited to records that have never been used by operational workflows or referenced by other records.
