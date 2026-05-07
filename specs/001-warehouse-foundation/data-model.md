@@ -569,22 +569,93 @@ PostgreSQL/EF Core persistence should support at least these database-level cons
 
 Database constraints do not replace user-friendly validation and error messages.
 
+## Resolved Open Questions for Contracts
+
+### OQ-001: Endpoint grouping
+
+Use separate capability-oriented endpoint groups instead of a single combined management endpoint.
+
+Expected contract groups:
+
+- warehouses;
+- zones;
+- storage locations;
+- SKUs;
+- warehouse layout.
+
+Rationale: this keeps contracts aligned with vertical slices and avoids a broad CRUD-style management endpoint.
+
+### OQ-002: Updating codes and addresses
+
+Warehouse Foundation allows updating codes and addresses while preserving stable identity.
+
+Allowed updates include:
+
+- Warehouse Code, if the new code is globally unique;
+- Zone Code, if the new code is unique within the Warehouse;
+- Storage Location Address, if the new address satisfies Location Address Rules and is unique within the Warehouse after normalization;
+- SKU Code, if the new code is globally unique.
+
+Rationale: full operational history does not exist in this milestone yet, so forbidding code/address edits would be premature. Future workflow features may introduce stricter change policies if needed.
+
+### OQ-003: Inactive records and response models
+
+List endpoints return active records by default and support an explicit `includeInactive=true` filter.
+
+All list, detail, and layout response models must include `IsActive` where the underlying model has lifecycle state. This allows the UI to show active and inactive records explicitly, even when a response includes both.
+
+Warehouse Layout must include activity state for Warehouse, Zones, and Storage Locations.
+
+Recommended behavior:
+
+- ordinary list endpoints default to active records only;
+- ordinary list endpoints support `includeInactive=true`;
+- detail endpoints return the requested record if it exists, including its `IsActive` value;
+- Warehouse Layout may include inactive records by default or through an explicit parameter because it is used for setup verification.
+
+Rationale: filtering controls which records are included, while `IsActive` communicates the lifecycle state of each returned record.
+
+### OQ-004: Location Address Rules management
+
+Create default Location Address Rules automatically when a Warehouse is created.
+
+Initial defaults:
+
+- MaxLength: 50;
+- TrimWhitespace: true;
+- NormalizeToUppercase: true;
+- AllowedPattern: simple warehouse-safe address pattern;
+- ZonePrefixRequired: false.
+
+Full UI management for Location Address Rules is deferred.
+
+Rationale: address rules are needed to keep Storage Location addresses consistent, but building a full rule-management UI would unnecessarily expand Warehouse Foundation.
+
+### OQ-005: Unit of Measure management
+
+Use a seeded read-only Unit of Measure set for the first milestone.
+
+Initial seed candidates:
+
+- piece;
+- box;
+- kilogram;
+- liter;
+- meter;
+- pallet;
+- package.
+
+User-managed units, unit conversion, alternative units, supplier packaging, and package hierarchy are deferred.
+
+Rationale: Unit of Measure is required by SKU, but full UoM management would pull Product Catalog and packaging concerns into Warehouse Foundation too early.
+
 ## Deferred Model Decisions
 
 The following model decisions are intentionally deferred:
 
-- whether Unit of Measure is user-maintained or seeded-only;
 - whether SKU Barcode has independent lifecycle or follows SKU lifecycle;
 - exact numeric types and units for capacity values;
 - exact location address pattern syntax;
 - whether normalized address is stored as a separate field;
 - whether future Inventory uses the same WarehouseDbContext or introduces a separate context;
 - physical extraction of Warehouse into a separate project.
-
-## Open Questions for Contracts / Tasks
-
-- Which operations need separate endpoints versus combined management endpoints?
-- Should update operations allow changing codes and addresses, or only display attributes initially?
-- Should inactive records appear by default in list endpoints or require an explicit filter?
-- Should Location Address Rules be managed through UI in the first implementation or seeded/defaulted per warehouse?
-- Should Unit of Measure be managed by users in the first implementation or provided as a fixed seed set?
