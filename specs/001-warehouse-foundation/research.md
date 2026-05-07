@@ -16,7 +16,7 @@ It resolves implementation-facing questions from `plan.md` before Phase 1 design
 | ID | Decision |
 |----|----------|
 | R-001 | Use PostgreSQL through EF Core/Npgsql as the initial relational database provider. |
-| R-002 | Keep persistence inside `Formica.ApiService/Warehouse/WarehouseFoundation/Persistence` for this milestone. |
+| R-002 | Keep Warehouse persistence at `Formica.ApiService/Warehouse/Persistence` and keep Warehouse Foundation feature code at `Formica.ApiService/Warehouse/WarehouseFoundation`. |
 | R-003 | Use Minimal API endpoint groups under `Formica.ApiService/Warehouse/WarehouseFoundation/Endpoints`. |
 | R-004 | Use Blazor pages/components/API clients under `Formica.Web/Warehouse/WarehouseFoundation`. |
 | R-005 | Use a pragmatic mixed testing approach in `Formica.Tests`. |
@@ -52,28 +52,46 @@ Aspire should orchestrate PostgreSQL for local development and integration testi
 - Integration tests should use PostgreSQL behavior where database behavior matters.
 - Data model design should avoid provider-specific features unless justified by future needs.
 
-## R-002: Persistence Placement
+## R-002: Backend Module and Persistence Placement
 
 ### Decision
 
-For this milestone, introduce persistence inside the existing API project under:
+For this milestone, use `Formica.ApiService` as the initial physical host for backend code, but do not treat `ApiService` as the owner of business logic.
+
+Place Warehouse backend code under a logical Warehouse module boundary:
 
 ```text
 Formica.ApiService/
 └── Warehouse/
+    ├── Persistence/
+    │   ├── WarehouseDbContext.cs
+    │   ├── Configurations/
+    │   │   └── WarehouseFoundation/
+    │   └── Migrations/
+    │
     └── WarehouseFoundation/
-        └── Persistence/
+        ├── Domain/
+        ├── Features/
+        └── Endpoints/
 ```
 
 Do not create a separate `Formica.Modules.Warehouse` project yet.
 
+### Meaning of `ApiService`
+
+`Formica.ApiService` is the ASP.NET Core host, API surface, DI composition point, and initial physical container for backend code.
+
+It must not become the conceptual owner of Warehouse business logic.
+
+Warehouse business logic may physically live inside `Formica.ApiService` during the first milestone, but it must remain organized inside a logical Warehouse boundary so it can be extracted later into a dedicated Warehouse module project if needed.
+
 ### Meaning of Persistence
 
-In this feature, `Persistence` means the feature-scoped infrastructure responsible for durable storage and retrieval of Warehouse Foundation data.
+In this feature, `Persistence` means the Warehouse-scoped infrastructure responsible for durable storage and retrieval of Warehouse module data.
 
 It may include:
 
-- EF Core `DbContext` or feature-specific DbContext grouping;
+- EF Core `DbContext`;
 - EF Core entity configurations;
 - migrations;
 - database constraint configuration;
@@ -82,25 +100,46 @@ It may include:
 
 It must not become a generic dumping ground for business rules, UI logic, endpoint definitions, or external integration code.
 
-Persistence is infrastructure, but it remains scoped to the Warehouse Foundation feature area instead of becoming a global infrastructure layer.
+Persistence is infrastructure, but it remains scoped to the logical Warehouse module instead of becoming a global infrastructure layer.
+
+### DbContext Granularity
+
+A domain or module boundary may own persistence decisions, but it does not automatically require a dedicated `DbContext` for every feature or boundary.
+
+For Warehouse Foundation, avoid placing a broad `WarehouseDbContext` inside the `WarehouseFoundation` folder because the name implies ownership of a wider Warehouse module than the milestone itself.
+
+The initial persistence boundary should be Warehouse-level, not WarehouseFoundation-level:
+
+```text
+Formica.ApiService/Warehouse/Persistence/WarehouseDbContext.cs
+```
+
+Warehouse Foundation contributes the first set of entities and EF Core configurations to this Warehouse-level persistence boundary.
+
+The Phase 1 data model must still confirm the final DbContext name and ownership before executable tasks are generated.
 
 ### Rationale
 
 - The constitution favors modular monolith first and Clean Architecture without ceremony.
-- Warehouse Foundation is the first milestone and does not yet justify physical module extraction.
-- Keeping persistence close to the feature area reduces navigation overhead.
-- A logical boundary is sufficient for the current scope.
-- Feature-scoped infrastructure keeps the persistence concern explicit without introducing a broad infrastructure project too early.
+- `WarehouseFoundation` is a milestone/feature area, while `Warehouse` is the more stable product/module boundary.
+- Keeping `WarehouseDbContext` at the Warehouse level avoids a predictable future move from `WarehouseFoundation/Persistence` to `Warehouse/Persistence`.
+- A logical Warehouse boundary is sufficient for the current scope without introducing a separate project.
+- Backend logic remains extractable from `Formica.ApiService` later.
+- Avoiding a premature DbContext-per-boundary rule prevents unnecessary ceremony and transaction/migration complexity.
 
 ### Alternatives Considered
 
 - **Separate `Formica.Modules.Warehouse` project**: may become useful later, but premature for this milestone.
-- **Global shared persistence folder**: rejected because it would weaken the Formica Warehouse feature boundary.
-- **No explicit `Persistence` folder**: simpler at first, but rejected because EF Core mappings, migrations, and database constraints need a clear home.
+- **`WarehouseFoundation/Persistence/WarehouseFoundationDbContext`**: internally consistent, but likely too narrow if Warehouse Foundation is the first part of a broader Warehouse module.
+- **`WarehouseFoundation/Persistence/WarehouseDbContext`**: rejected because the DbContext name would be broader than its folder boundary.
+- **Global shared persistence folder**: rejected because it would weaken the Formica Warehouse feature/module boundary.
+- **Mandatory DbContext per boundary**: rejected because it would be premature and may create unnecessary transaction, migration, and naming complexity.
 
 ### Consequences
 
-- Keep `DbContext`, EF configurations, migrations, and persistence helpers scoped to Warehouse Foundation or a clear Warehouse area.
+- Keep EF Core configurations, migrations, database constraints, and persistence helpers under `Formica.ApiService/Warehouse/Persistence`.
+- Keep Warehouse Foundation domain/use-case/API behavior under `Formica.ApiService/Warehouse/WarehouseFoundation`.
+- Keep endpoints thin; business behavior must remain inside feature/application/domain code, not endpoint handlers.
 - Revisit physical module extraction when Inventory, Inbound, Outbound, or Integrations add real complexity.
 - Keep domain behavior outside persistence-specific classes unless it is purely persistence mapping or database constraint configuration.
 
@@ -136,7 +175,7 @@ Expected route groups:
 - Minimal API matches the project direction.
 - Route groups map to user-visible capabilities from the specification.
 - `layout` is clearer than the ambiguous term `structure` for read-only warehouse organization views.
-- Keeping endpoints grouped under Warehouse Foundation makes the first module boundary visible.
+- Keeping endpoints grouped under Warehouse Foundation makes the first feature boundary visible.
 
 ### Alternatives Considered
 
@@ -148,6 +187,7 @@ Expected route groups:
 
 - Endpoint contracts must be designed in `contracts/` before tasks.
 - Endpoint grouping should stay capability-oriented, not persistence-table-oriented.
+- Endpoint handlers should stay thin and delegate behavior to feature/application/domain code.
 
 ## R-004: Blazor Placement
 
