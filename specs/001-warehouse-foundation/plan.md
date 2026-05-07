@@ -13,8 +13,8 @@ The feature establishes the operational foundation for future warehouse workflow
 - zones;
 - storage locations;
 - configurable location addresses;
-- basic SKU references;
-- SKU barcode references;
+- basic SKUs;
+- SKU barcodes;
 - active/inactive lifecycle;
 - basic warehouse layout visibility.
 
@@ -40,7 +40,7 @@ The feature must not implement full inventory accounting, receiving, putaway, ou
 **Project Type**: Modular monolith web application with separate API and UI surfaces  
 **Performance Goals**: Foundation administration workflows should remain responsive for ordinary warehouse setup data volumes; no high-throughput operational workflow is introduced by this feature  
 **Constraints**: Keep implementation simple; avoid MediatR and unnecessary third-party abstractions; preserve future compatibility with inventory workflows; keep backend business logic extractable from `Formica.ApiService`  
-**Scale/Scope**: First milestone administrative foundation; expected to support multiple warehouses, zones, storage locations, and SKU references, but not high-volume operational transaction processing yet
+**Scale/Scope**: First milestone administrative foundation; expected to support multiple warehouses, zones, storage locations, and SKUs, but not high-volume operational transaction processing yet
 
 ## Existing Solution Baseline
 
@@ -95,7 +95,7 @@ Business rules should remain independent from UI, HTTP, and persistence. `Formic
 
 Status: PASS.
 
-Implementation should be organized around feature capabilities such as warehouse management, zone management, storage location management, SKU reference management, and warehouse layout viewing.
+Implementation should be organized around feature capabilities such as warehouse management, zone management, storage location management, SKU management, and warehouse layout viewing.
 
 ### VI. DDD-Oriented Design
 
@@ -173,7 +173,7 @@ The implementation should be grouped around independently testable capabilities:
 - create and maintain warehouses;
 - create and maintain zones;
 - create and maintain storage locations and addresses;
-- create and maintain basic SKU references and barcode values;
+- create and maintain basic SKUs and barcode values;
 - view the warehouse layout.
 
 Rationale:
@@ -184,7 +184,7 @@ Rationale:
 
 ### TD-004: Use PostgreSQL through EF Core/Npgsql for relational persistence
 
-Warehouse Foundation requires durable storage for warehouses, zones, storage locations, address rules, SKU references, and barcode values. PostgreSQL should be used through EF Core and the Npgsql provider.
+Warehouse Foundation requires durable storage for warehouses, zones, storage locations, address rules, SKUs, and barcode values. PostgreSQL should be used through EF Core and the Npgsql provider.
 
 Rationale:
 
@@ -240,7 +240,7 @@ Rationale:
 
 ### TD-008: Barcode model allows multiple barcodes per SKU
 
-A SKU may have multiple barcode values. Barcode values must be unique across SKU references unless a future feature defines reuse or aliasing rules.
+A SKU may have multiple barcode values. Barcode values must be unique across SKUs unless a future feature defines reuse or aliasing rules.
 
 Rationale:
 
@@ -293,7 +293,7 @@ Formica.ApiService/
         │   ├── Warehouses/
         │   ├── Zones/
         │   ├── StorageLocations/
-        │   ├── SkuReferences/
+        │   ├── Skus/
         │   └── WarehouseLayout/
         └── Endpoints/
 
@@ -388,7 +388,7 @@ Expected contract groups:
 - warehouses;
 - zones;
 - storage locations;
-- SKU references;
+- SKUs;
 - warehouse layout view.
 
 ### Quickstart Scope
@@ -399,7 +399,7 @@ Expected contract groups:
 2. create zones;
 3. create storage locations with addresses;
 4. verify duplicate prevention;
-5. create SKU references with multiple barcode values;
+5. create SKUs with multiple barcode values;
 6. verify duplicate barcode prevention;
 7. view warehouse layout;
 8. deactivate and reactivate configured references.
@@ -415,7 +415,7 @@ Minimum validation coverage:
 - location address uniqueness within warehouse;
 - SKU code uniqueness;
 - multiple barcode values per SKU;
-- barcode value uniqueness across SKU references;
+- barcode value uniqueness across SKUs;
 - active/inactive lifecycle;
 - reactivation validation;
 - warehouse layout view behavior;
