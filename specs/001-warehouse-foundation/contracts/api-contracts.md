@@ -39,6 +39,8 @@ Create → Update → Deactivate → Reactivate
 
 Physical deletion is not a normal Warehouse Foundation API operation.
 
+Deactivate/reactivate endpoints use `POST` because they represent explicit lifecycle commands, not generic partial updates to the `isActive` field.
+
 ### Activity State
 
 All list, detail, and layout responses must include `isActive` where the underlying model has lifecycle state.
@@ -731,7 +733,7 @@ The following contract decisions are deferred:
 
 - pagination and sorting conventions;
 - search/filter syntax beyond `includeInactive`, `warehouseId`, and `zoneId`;
-- PATCH versus PUT partial update semantics;
+- PATCH versus PUT partial update semantics for ordinary editable attributes;
 - separate barcode-management endpoints;
 - create/update APIs for Unit of Measure;
 - create/update APIs for Location Address Rules;
