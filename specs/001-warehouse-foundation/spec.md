@@ -3,7 +3,7 @@
 **Feature Branch**: `001-warehouse-foundation`  
 **Created**: 2026-05-04  
 **Status**: Ready for Planning  
-**Input**: Establish the first Formica Warehouse foundation feature. Users must be able to create warehouses, create warehouse zones, create storage locations, configure location addresses, maintain basic SKUs, view the basic warehouse structure, and prepare a stable base for future inventory workflows.
+**Input**: Establish the first Formica Warehouse foundation feature. Users must be able to create warehouses, create warehouse zones, create storage locations, configure location addresses, maintain basic SKUs, view the basic warehouse layout, and prepare a stable base for future inventory workflows.
 
 ## User Scenarios & Testing
 
@@ -28,7 +28,7 @@ As a warehouse administrator, I want to create zones inside a warehouse, so that
 
 **Why this priority**: Zones provide the first level of warehouse organization and are required to group storage locations in a manageable way.
 
-**Independent Test**: A user can create zones for a selected warehouse and view them as part of that warehouse structure.
+**Independent Test**: A user can create zones for a selected warehouse and view them as part of that warehouse layout.
 
 **Acceptance Scenarios**:
 
@@ -44,7 +44,7 @@ As a warehouse administrator, I want to create storage locations with consistent
 
 **Why this priority**: Storage locations and their addresses are the operational basis for future inventory balances, receiving, putaway, storage operations, picking, packing, shipping, and mobile scanning workflows.
 
-**Independent Test**: A user can create storage locations inside zones, assign addresses, and see them in the warehouse structure.
+**Independent Test**: A user can create storage locations inside zones, assign addresses, and see them in the warehouse layout.
 
 **Acceptance Scenarios**:
 
@@ -59,7 +59,7 @@ As a warehouse administrator, I want to create storage locations with consistent
 
 As a warehouse administrator, I want to maintain basic SKUs, so that future inventory and warehouse operations can refer to stock consistently.
 
-**Why this priority**: Warehouse structure alone is not enough for inventory workflows. Future stock balances and movements need stable SKUs.
+**Why this priority**: Warehouse layout alone is not enough for inventory workflows. Future stock balances and movements need stable SKUs.
 
 **Independent Test**: A user can create a SKU with a unique code, name, base unit of measure, one or more optional barcode values, and active status.
 
@@ -73,19 +73,19 @@ As a warehouse administrator, I want to maintain basic SKUs, so that future inve
 
 ---
 
-### User Story 5 - View basic warehouse structure (Priority: P2)
+### User Story 5 - View basic warehouse layout (Priority: P2)
 
-As an operations manager, I want to view the warehouse structure by warehouse, zone, and storage location, so that I can verify that the operational model matches the real warehouse.
+As an operations manager, I want to view the warehouse layout by warehouse, zone, and storage location, so that I can verify that the operational model matches the real warehouse.
 
 **Why this priority**: Users need confidence that the warehouse foundation has been configured correctly before future inventory workflows depend on it.
 
-**Independent Test**: A user can open a warehouse structure view and see warehouses, zones, and storage locations with their addresses and statuses.
+**Independent Test**: A user can open a warehouse layout view and see warehouses, zones, and storage locations with their addresses and statuses.
 
 **Acceptance Scenarios**:
 
-1. **Given** warehouses, zones, and storage locations exist, **When** the operations manager views the warehouse structure, **Then** the structure is shown as warehouse → zone → storage locations.
-2. **Given** a storage location is inactive, **When** the warehouse structure is viewed, **Then** the inactive state is visible to the user.
-3. **Given** a warehouse has no zones or locations yet, **When** the warehouse structure is viewed, **Then** the system clearly shows that setup is incomplete.
+1. **Given** warehouses, zones, and storage locations exist, **When** the operations manager views the warehouse layout, **Then** the layout is shown as warehouse → zone → storage locations.
+2. **Given** a storage location is inactive, **When** the warehouse layout is viewed, **Then** the inactive state is visible to the user.
+3. **Given** a warehouse has no zones or locations yet, **When** the warehouse layout is viewed, **Then** the system clearly shows that setup is incomplete.
 
 ---
 
@@ -95,7 +95,7 @@ As a system stakeholder, I want the warehouse foundation to maintain stable refe
 
 **Why this priority**: The first milestone must not implement full inventory accounting, but it must avoid choices that would block future inventory workflows or destroy operational reference history.
 
-**Independent Test**: A configured warehouse structure and SKU list remain stable enough for future features to reference without relying on display names or manually interpreted text.
+**Independent Test**: A configured warehouse layout and SKU list remain stable enough for future features to reference without relying on display names or manually interpreted text.
 
 **Acceptance Scenarios**:
 
@@ -127,8 +127,8 @@ As a system stakeholder, I want the warehouse foundation to maintain stable refe
 - **FR-017**: A SKU MAY have one or more optional barcode values.
 - **FR-018**: Barcode values, when provided, MUST be unique across all SKUs unless a future feature explicitly defines barcode reuse or aliasing rules.
 - **FR-019**: The system MUST allow SKUs to be marked active or inactive.
-- **FR-020**: The system MUST allow an operations manager to view the warehouse structure as warehouse → zone → storage locations.
-- **FR-021**: The warehouse structure view MUST show location addresses and active/inactive status.
+- **FR-020**: The system MUST allow an operations manager to view the warehouse layout as warehouse → zone → storage locations.
+- **FR-021**: The warehouse layout view MUST show location addresses and active/inactive status.
 - **FR-022**: The system MUST keep stable references for warehouses, zones, storage locations, and SKUs so future inventory workflows can refer to them safely.
 - **FR-023**: The system MUST prevent duplicate warehouse codes, duplicate SKU codes, duplicate zone codes within a warehouse, duplicate location addresses within a warehouse, and duplicate barcode values across SKUs.
 - **FR-024**: The system MUST allow users to update editable attributes of warehouses, zones, storage locations, and SKUs while preserving their stable identity.
@@ -158,8 +158,16 @@ The Warehouse Foundation feature MUST NOT implement:
 - Bitrix24 integration;
 - analytics or optimization;
 - automatic slotting;
-- route optimization;
-- database schema, API contracts, UI component design, or implementation structure.
+- route optimization.
+
+This feature specification intentionally does not define:
+
+- database schema;
+- API contracts;
+- UI component design;
+- implementation structure.
+
+These HOW-level details belong to downstream Spec Kit artifacts such as `plan.md`, `data-model.md`, `contracts/`, `quickstart.md`, and `tasks.md`.
 
 ### Key Entities
 
@@ -175,9 +183,9 @@ The Warehouse Foundation feature MUST NOT implement:
 
 ### Measurable Outcomes
 
-- **SC-001**: A warehouse administrator can configure at least one complete warehouse structure consisting of one warehouse, multiple zones, and multiple storage locations.
+- **SC-001**: A warehouse administrator can configure at least one complete warehouse layout consisting of one warehouse, multiple zones, and multiple storage locations.
 - **SC-002**: The system prevents duplicate warehouse codes, duplicate SKU codes, duplicate zone codes within the same warehouse, duplicate location addresses within the same warehouse, and duplicate barcode values across SKUs.
-- **SC-003**: An operations manager can view the configured warehouse structure in a way that clearly shows warehouse, zone, storage location, address, and active/inactive status.
+- **SC-003**: An operations manager can view the configured warehouse layout in a way that clearly shows warehouse, zone, storage location, address, and active/inactive status.
 - **SC-004**: A warehouse administrator can create basic SKUs with code, name, base unit of measure, one or more optional barcode values, and active/inactive status.
 - **SC-005**: Future inventory specifications can refer to warehouses, storage locations, and SKUs without redefining these concepts.
 - **SC-006**: A warehouse administrator can update, deactivate, and reactivate warehouse foundation records without changing their stable identity.
