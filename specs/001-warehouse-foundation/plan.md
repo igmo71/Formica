@@ -248,6 +248,43 @@ Rationale:
 - prevents ambiguous barcode-to-SKU resolution;
 - avoids implementing full integration-specific barcode semantics in this milestone.
 
+### TD-009: Use lightweight command/query convention inside vertical slices
+
+Use explicit command/query naming inside feature files, without introducing MediatR, a global dispatcher, or generic CQRS framework for this milestone.
+
+Examples:
+
+```text
+Features/Warehouses/CreateWarehouse.cs
+Features/Warehouses/ListWarehouses.cs
+Features/Warehouses/GetWarehouse.cs
+Features/WarehouseLayout/GetWarehouseLayout.cs
+```
+
+Commands mutate state. Queries read state. Endpoint handlers should call the relevant feature handler directly and remain thin.
+
+Rationale:
+
+- keeps intent clear;
+- supports vertical slices;
+- avoids premature dispatcher abstractions;
+- leaves room for a simple internal dispatcher later if repetition or cross-cutting pipelines justify it.
+
+### TD-010: Start with default Blazor and Bootstrap for UI
+
+Warehouse Foundation should use the default Blazor UI stack with Bootstrap for the first milestone.
+
+Do not introduce MudBlazor or another component framework during Warehouse Foundation unless implementation exposes a concrete need that cannot be handled reasonably with default Blazor and Bootstrap.
+
+MudBlazor may be evaluated later if the UI requires richer corporate components such as advanced grids, dialogs, tree views, autocomplete, or more complex forms.
+
+Rationale:
+
+- keeps dependencies minimal;
+- aligns with the existing template baseline;
+- preserves simple, inspectable UI markup;
+- avoids adopting a component framework before the first milestone proves the need.
+
 ## Project Structure
 
 ### Documentation (this feature)
