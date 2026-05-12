@@ -664,6 +664,8 @@ Location Address Rules are created automatically with default values when a Ware
 
 Full UI/API management for Location Address Rules is deferred.
 
+The `allowedPattern` value shown below is a suggested default for the first implementation, not a finalized long-term address-pattern language.
+
 ### Get Location Address Rules
 
 ```http
