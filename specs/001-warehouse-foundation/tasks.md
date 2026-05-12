@@ -12,7 +12,7 @@
 
 - **[P]**: Can run in parallel because it touches different files or independent areas.
 - **[Story]**: User story from `spec.md` when applicable.
-- Each task includes exact file paths.
+- Tasks include concrete file paths or concrete target folders where final file decomposition is intentionally left to implementation.
 
 ## Phase 1: Setup
 
@@ -241,7 +241,7 @@
 
 ## Phase 9: Polish and Cross-Cutting Validation
 
-**Purpose**: Final consistency, validation, documentation, and quickstart verification.
+**Purpose**: Final consistency, validation, documentation, and quickstart verification. Polish means final cleanup and presentation-quality finishing work, not new feature scope.
 
 - [ ] T104 [P] Run `dotnet format` for `Formica.slnx` and fix formatting issues.
 - [ ] T105 Run `dotnet build Formica.slnx` and fix build errors.
@@ -289,8 +289,12 @@
 ## Notes
 
 - Tests should be written before implementation and should fail before the corresponding implementation task is completed.
+- Use lightweight command/query naming inside vertical slices: commands mutate state, queries read state.
+- Do not introduce MediatR, a global dispatcher, or a generic CQRS framework for this milestone.
 - Keep endpoint handlers thin; delegate behavior to feature/application/domain code.
 - Keep business rules out of EF configuration and Blazor API clients.
 - Keep `Formica.ApiService` as host/composition root; Warehouse business logic remains inside the logical Warehouse boundary.
-- Do not introduce MediatR, external validation frameworks, mapping frameworks, or additional UI libraries for this milestone.
+- Use default Blazor with Bootstrap for the first Warehouse Foundation UI implementation.
+- Do not introduce MudBlazor or another UI component framework unless a concrete implementation need is explicitly documented first.
+- Do not introduce external validation frameworks, mapping frameworks, or additional UI libraries for this milestone.
 - Commit after each task or coherent task group.
