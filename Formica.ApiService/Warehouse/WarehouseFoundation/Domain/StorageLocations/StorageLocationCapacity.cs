@@ -46,7 +46,8 @@ public sealed record StorageLocationCapacity
         return DomainValidationResult.Invalid(errors);
     }
 
-    public static StorageLocationCapacity Create(
+    public static DomainValidationResult TryCreate(
+        out StorageLocationCapacity? capacity,
         decimal? maxWeight = null,
         decimal? volume = null,
         decimal? height = null,
@@ -56,10 +57,12 @@ public sealed record StorageLocationCapacity
         var result = Validate(maxWeight, volume, height, width, depth);
         if (!result.IsValid)
         {
-            throw new ArgumentException("Storage location capacity values must be non-negative.");
+            capacity = null;
+            return result;
         }
 
-        return new StorageLocationCapacity(maxWeight, volume, height, width, depth);
+        capacity = new StorageLocationCapacity(maxWeight, volume, height, width, depth);
+        return DomainValidationResult.Valid;
     }
 
     private static void AddNonNegativeError(List<DomainValidationFailure> errors, decimal? value, string field)
