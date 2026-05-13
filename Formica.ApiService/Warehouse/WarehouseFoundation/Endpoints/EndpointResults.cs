@@ -6,26 +6,17 @@ namespace Formica.ApiService.Warehouse.WarehouseFoundation.Endpoints;
 
 public static class EndpointResults
 {
-    private const string ValidationProblemType = "https://formica/problems/validation-error";
     private const string ConflictProblemType = "https://formica/problems/conflict";
 
-    public static BadRequest<ProblemDetails> ValidationProblem(DomainValidationResult validationResult)
+    public static ValidationProblem ValidationProblem(DomainValidationResult validationResult)
     {
-        var problemDetails = new ProblemDetails
-        {
-            Type = ValidationProblemType,
-            Title = "Validation error",
-            Status = StatusCodes.Status400BadRequest,
-            Detail = "One or more validation errors occurred."
-        };
-
-        problemDetails.Extensions["errors"] = validationResult.Errors
+        var errors = validationResult.Errors
             .GroupBy(error => error.Field ?? error.Code)
             .ToDictionary(
                 group => group.Key,
                 group => group.Select(error => error.Message).ToArray());
 
-        return TypedResults.BadRequest(problemDetails);
+        return TypedResults.ValidationProblem(errors);
     }
 
     public static Conflict<ProblemDetails> Conflict(string detail, string? code = null)
