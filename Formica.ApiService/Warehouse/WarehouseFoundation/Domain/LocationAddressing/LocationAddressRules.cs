@@ -94,17 +94,18 @@ public sealed class LocationAddressRules : EntityLifecycle
 
     public string NormalizeAddress(string address)
     {
+        ArgumentException.ThrowIfNullOrWhiteSpace(address);
+
         var normalized = TrimWhitespace ? address.Trim() : address;
 
         return NormalizeToUppercase ? normalized.ToUpperInvariant() : normalized;
     }
 
-    public DomainValidationResult ValidateAddress(string address, string? zoneCode = null)
+    public DomainValidationResult ValidateAddress(string? address, string? zoneCode = null)
     {
         var errors = new List<DomainValidationFailure>();
-        var normalizedAddress = NormalizeAddress(address);
 
-        if (string.IsNullOrWhiteSpace(normalizedAddress))
+        if (string.IsNullOrWhiteSpace(address))
         {
             errors.Add(new(
                 "LocationAddress.AddressRequired",
@@ -113,6 +114,8 @@ public sealed class LocationAddressRules : EntityLifecycle
 
             return DomainValidationResult.Invalid(errors);
         }
+
+        var normalizedAddress = NormalizeAddress(address);
 
         if (normalizedAddress.Length > MaxLength)
         {
