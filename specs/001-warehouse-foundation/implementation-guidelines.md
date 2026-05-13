@@ -84,7 +84,11 @@ Rules:
 
 - Domain validation primitives MUST NOT reference ASP.NET Core, HTTP, Blazor, EF Core, endpoint contracts, or `Features`.
 - Domain validation primitives MAY be used by rich domain models to report expected domain input/invariant errors without throwing exceptions.
+- Expected user-input/domain validation failures MUST be returned through `DomainValidationResult`, not thrown as `ArgumentException`, `InvalidOperationException`, or HTTP/API errors.
+- Exceptions are reserved for programming errors or impossible states.
+- Domain factories that can receive untrusted input SHOULD expose a validation-returning creation method such as `TryCreate(...)` returning `DomainValidationResult` and an `out` domain object.
 - Endpoint/application code MAY translate `DomainValidationResult` to HTTP validation responses.
+- Endpoint helpers SHOULD use standard ASP.NET Core validation responses, such as `TypedResults.ValidationProblem(...)`, when translating domain validation failures to HTTP.
 - Do not introduce a generic application-wide `Result<T>`, CQRS result framework, or third-party validation abstraction in Warehouse Foundation unless explicitly approved later.
 
 Expected shape:

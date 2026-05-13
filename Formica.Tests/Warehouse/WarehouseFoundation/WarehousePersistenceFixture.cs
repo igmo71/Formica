@@ -1,0 +1,57 @@
+using Aspire.Hosting;
+using Formica.ApiService.Warehouse.Persistence;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
+
+namespace Formica.Tests.Warehouse.WarehouseFoundation;
+
+public sealed class WarehousePersistenceFixture : IAsyncLifetime
+{
+    private static readonly TimeSpan DefaultTimeout = TimeSpan.FromSeconds(30);
+    private DistributedApplication? _app;
+    private string? _connectionString;
+
+    public async ValueTask InitializeAsync()
+    {
+        var cancellationToken = TestContext.Current.CancellationToken;
+
+        var appHost = await DistributedApplicationTestingBuilder.CreateAsync<Projects.Formica_AppHost>(cancellationToken);
+        appHost.Services.AddLogging(logging =>
+        {
+            logging.SetMinimumLevel(LogLevel.Debug);
+            logging.AddFilter(appHost.Environment.ApplicationName, LogLevel.Debug);
+            logging.AddFilter("Aspire.", LogLevel.Debug);
+        });
+
+        _app = await appHost.BuildAsync(cancellationToken).WaitAsync(DefaultTimeout, cancellationToken);
+        await _app.StartAsync(cancellationToken).WaitAsync(DefaultTimeout, cancellationToken);
+        await _app.ResourceNotifications.WaitForResourceHealthyAsync("warehouse", cancellationToken)
+            .WaitAsync(DefaultTimeout, cancellationToken);
+
+        _connectionString = await _app.GetConnectionStringAsync("warehouse", cancellationToken)
+            .AsTask()
+            .WaitAsync(DefaultTimeout, cancellationToken);
+    }
+
+    public WarehouseDbContext CreateDbContext()
+    {
+        if (string.IsNullOrWhiteSpace(_connectionString))
+        {
+            throw new InvalidOperationException("Warehouse persistence fixture has not been initialized.");
+        }
+
+        var options = new DbContextOptionsBuilder<WarehouseDbContext>()
+            .UseNpgsql(_connectionString)
+            .Options;
+
+        return new WarehouseDbContext(options);
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_app is not null)
+        {
+            await _app.DisposeAsync();
+        }
+    }
+}
