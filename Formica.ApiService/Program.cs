@@ -20,6 +20,7 @@ app.UseExceptionHandler();
 
 if (app.Environment.IsDevelopment())
 {
+    await app.Services.InitializeWarehousePersistenceAsync();
     app.MapOpenApi();
 }
 

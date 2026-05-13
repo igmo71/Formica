@@ -73,23 +73,23 @@
 
 ### Tests for User Story 1
 
-- [ ] T024 [P] [US1] Add warehouse API contract tests in `Formica.Tests/Warehouse/WarehouseFoundation/Warehouses/WarehouseApiTests.cs`.
-- [ ] T025 [P] [US1] Add warehouse uniqueness persistence tests in `Formica.Tests/Warehouse/WarehouseFoundation/Warehouses/WarehousePersistenceTests.cs`.
-- [ ] T026 [P] [US1] Add default Location Address Rules creation test in `Formica.Tests/Warehouse/WarehouseFoundation/Warehouses/DefaultLocationAddressRulesTests.cs`.
+- [X] T024 [P] [US1] Add warehouse API contract tests in `Formica.Tests/Warehouse/WarehouseFoundation/Warehouses/WarehouseApiTests.cs`.
+- [X] T025 [P] [US1] Add warehouse uniqueness persistence tests in `Formica.Tests/Warehouse/WarehouseFoundation/Warehouses/WarehousePersistenceTests.cs`.
+- [X] T026 [P] [US1] Add default Location Address Rules creation test in `Formica.Tests/Warehouse/WarehouseFoundation/Warehouses/DefaultLocationAddressRulesTests.cs`.
 
 ### Implementation for User Story 1
 
-- [ ] T027 [US1] Create `Warehouse` domain model in `Formica.ApiService/Warehouse/WarehouseFoundation/Domain/Warehouses/Warehouse.cs`.
-- [ ] T028 [US1] Create Warehouse EF configuration in `Formica.ApiService/Warehouse/Persistence/Configurations/WarehouseFoundation/WarehouseConfiguration.cs`.
-- [ ] T029 [US1] Create Location Address Rules EF configuration in `Formica.ApiService/Warehouse/Persistence/Configurations/WarehouseFoundation/LocationAddressRulesConfiguration.cs`, only if Location Address Rules are persisted with a coherent model and without using `WarehouseId` as a placeholder primary key.
-- [ ] T030 [US1] Create warehouse request/response DTOs in `Formica.ApiService/Warehouse/WarehouseFoundation/Contracts/Warehouses/`.
-- [ ] T031 [US1] Implement create warehouse feature in `Formica.ApiService/Warehouse/WarehouseFoundation/Features/Warehouses/CreateWarehouse.cs`.
-- [ ] T032 [US1] Implement list/get warehouse features in `Formica.ApiService/Warehouse/WarehouseFoundation/Features/Warehouses/`.
-- [ ] T033 [US1] Implement update warehouse feature in `Formica.ApiService/Warehouse/WarehouseFoundation/Features/Warehouses/UpdateWarehouse.cs`.
-- [ ] T034 [US1] Implement deactivate/reactivate warehouse features in `Formica.ApiService/Warehouse/WarehouseFoundation/Features/Warehouses/`.
-- [ ] T035 [US1] Implement warehouse endpoints in `Formica.ApiService/Warehouse/WarehouseFoundation/Endpoints/WarehouseEndpoints.cs`.
-- [ ] T036 [US1] Add Warehouse API client methods in `Formica.Web/Warehouse/WarehouseFoundation/ApiClients/WarehouseFoundationApiClient.cs`.
-- [ ] T037 [US1] Add basic Warehouse management page in `Formica.Web/Warehouse/WarehouseFoundation/Pages/Warehouses.razor`.
+- [X] T027 [US1] Create `Warehouse` domain model in `Formica.ApiService/Warehouse/WarehouseFoundation/Domain/Warehouses/Warehouse.cs`.
+- [X] T028 [US1] Create Warehouse EF configuration in `Formica.ApiService/Warehouse/Persistence/Configurations/WarehouseFoundation/WarehouseConfiguration.cs`.
+- [X] T029 [US1] Create Location Address Rules EF configuration in `Formica.ApiService/Warehouse/Persistence/Configurations/WarehouseFoundation/LocationAddressRulesConfiguration.cs`, only if Location Address Rules are persisted with a coherent model and without using `WarehouseId` as a placeholder primary key.
+- [X] T030 [US1] Create warehouse request/response DTOs in `Formica.ApiService/Warehouse/WarehouseFoundation/Contracts/Warehouses/`.
+- [X] T031 [US1] Implement create warehouse feature in `Formica.ApiService/Warehouse/WarehouseFoundation/Features/Warehouses/CreateWarehouse.cs`.
+- [X] T032 [US1] Implement list/get warehouse features in `Formica.ApiService/Warehouse/WarehouseFoundation/Features/Warehouses/`.
+- [X] T033 [US1] Implement update warehouse feature in `Formica.ApiService/Warehouse/WarehouseFoundation/Features/Warehouses/UpdateWarehouse.cs`.
+- [X] T034 [US1] Implement deactivate/reactivate warehouse features in `Formica.ApiService/Warehouse/WarehouseFoundation/Features/Warehouses/`.
+- [X] T035 [US1] Implement warehouse endpoints in `Formica.ApiService/Warehouse/WarehouseFoundation/Endpoints/WarehouseEndpoints.cs`.
+- [X] T036 [US1] Add Warehouse API client methods in `Formica.Web/Warehouse/WarehouseFoundation/ApiClients/WarehouseFoundationApiClient.cs`.
+- [X] T037 [US1] Add basic Warehouse management page in `Formica.Web/Warehouse/WarehouseFoundation/Pages/Warehouses.razor`.
 
 **Checkpoint**: US1 works independently through API and has initial UI surface.
 

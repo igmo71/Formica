@@ -11,6 +11,8 @@ public static class WarehouseFoundationEndpoints
         group.MapGet("/", () => Results.Ok(new WarehouseFoundationStatusResponse("Warehouse Foundation endpoints are registered.")))
             .WithName("GetWarehouseFoundationStatus");
 
+        group.MapWarehouseEndpoints();
+
         return endpoints;
     }
 

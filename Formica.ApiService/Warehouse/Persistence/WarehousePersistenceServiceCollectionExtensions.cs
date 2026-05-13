@@ -23,4 +23,12 @@ public static class WarehousePersistenceServiceCollectionExtensions
 
         return services;
     }
+
+    public static async Task InitializeWarehousePersistenceAsync(this IServiceProvider services)
+    {
+        await using var scope = services.CreateAsyncScope();
+        var dbContext = scope.ServiceProvider.GetRequiredService<WarehouseDbContext>();
+
+        await dbContext.Database.EnsureCreatedAsync();
+    }
 }

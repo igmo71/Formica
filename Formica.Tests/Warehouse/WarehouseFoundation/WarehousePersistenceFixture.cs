@@ -31,6 +31,9 @@ public sealed class WarehousePersistenceFixture : IAsyncLifetime
         _connectionString = await _app.GetConnectionStringAsync("warehouse", cancellationToken)
             .AsTask()
             .WaitAsync(DefaultTimeout, cancellationToken);
+
+        await using var dbContext = CreateDbContext();
+        await dbContext.Database.EnsureCreatedAsync(cancellationToken);
     }
 
     public WarehouseDbContext CreateDbContext()
