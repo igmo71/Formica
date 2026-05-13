@@ -18,12 +18,12 @@
 
 **Purpose**: Prepare the existing Aspire solution for Warehouse Foundation implementation.
 
-- [ ] T001 Add PostgreSQL Aspire hosting package to `Formica.AppHost/Formica.AppHost.csproj`.
-- [ ] T002 Add EF Core Npgsql provider and EF Core design package references to `Formica.ApiService/Formica.ApiService.csproj`.
-- [ ] T003 Configure PostgreSQL resource and API service connection in `Formica.AppHost/Program.cs`.
-- [ ] T004 Create Warehouse module folders under `Formica.ApiService/Warehouse/`.
-- [ ] T005 Create Warehouse Foundation UI folders under `Formica.Web/Warehouse/WarehouseFoundation/`.
-- [ ] T006 Create Warehouse Foundation test folders under `Formica.Tests/Warehouse/WarehouseFoundation/`.
+- [X] T001 Add PostgreSQL Aspire hosting package to `Formica.AppHost/Formica.AppHost.csproj`.
+- [X] T002 Add EF Core Npgsql provider and EF Core design package references to `Formica.ApiService/Formica.ApiService.csproj`.
+- [X] T003 Configure PostgreSQL resource and API service connection in `Formica.AppHost/Program.cs`.
+- [X] T004 Create Warehouse module folders under `Formica.ApiService/Warehouse/`.
+- [X] T005 Create Warehouse Foundation UI folders under `Formica.Web/Warehouse/WarehouseFoundation/`.
+- [X] T006 Create Warehouse Foundation test folders under `Formica.Tests/Warehouse/WarehouseFoundation/`.
 
 ---
 
