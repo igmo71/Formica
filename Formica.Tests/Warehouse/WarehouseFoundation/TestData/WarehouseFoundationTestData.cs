@@ -17,5 +17,20 @@ public static class WarehouseFoundationTestData
         decimal? height = 1m,
         decimal? width = 1m,
         decimal? depth = 2.5m)
-        => StorageLocationCapacity.Create(maxWeight, volume, height, width, depth);
+    {
+        var validationResult = StorageLocationCapacity.TryCreate(
+            out var capacity,
+            maxWeight,
+            volume,
+            height,
+            width,
+            depth);
+
+        if (!validationResult.IsValid || capacity is null)
+        {
+            throw new InvalidOperationException("Default warehouse foundation test capacity data is invalid.");
+        }
+
+        return capacity;
+    }
 }
