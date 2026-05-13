@@ -30,6 +30,8 @@ The implementation approach is a pragmatic modular monolith using the existing A
 
 The feature must not implement full inventory accounting, receiving, putaway, outbound, mobile workflows, 1C synchronization, or optimization. It must prepare stable references that future inventory workflows can use.
 
+Implementation must also follow `specs/001-warehouse-foundation/implementation-guidelines.md`, which defines binding guardrails for internal dependency direction, rich domain model style, identity generation, Location Address Rules, EF Core migration policy, and review branch workflow.
+
 ## Technical Context
 
 **Language/Version**: C# / .NET 10  
@@ -39,7 +41,7 @@ The feature must not implement full inventory accounting, receiving, putaway, ou
 **Target Platform**: Server-side web application with Web API and Blazor UI, developed and run through Aspire AppHost  
 **Project Type**: Modular monolith web application with separate API and UI surfaces  
 **Performance Goals**: Foundation administration workflows should remain responsive for ordinary warehouse setup data volumes; no high-throughput operational workflow is introduced by this feature  
-**Constraints**: Keep implementation simple; avoid MediatR and unnecessary third-party abstractions; preserve future compatibility with inventory workflows; keep backend business logic extractable from `Formica.ApiService`  
+**Constraints**: Keep implementation simple; avoid MediatR and unnecessary third-party abstractions; preserve future compatibility with inventory workflows; keep backend business logic extractable from `Formica.ApiService`; keep Domain independent from Features, Endpoints, Persistence, Contracts, ASP.NET Core, and Blazor UI  
 **Scale/Scope**: First milestone administrative foundation; expected to support multiple warehouses, zones, storage locations, and SKUs, but not high-volume operational transaction processing yet
 
 ## Existing Solution Baseline
@@ -77,7 +79,7 @@ The feature has a reviewed specification at `specs/001-warehouse-foundation/spec
 
 Status: PASS.
 
-The specification defines user-visible behavior and excludes implementation details. This plan introduces implementation approach and structure.
+The specification defines user-visible behavior and excludes implementation details. This plan introduces implementation approach and structure. Additional implementation guardrails are documented in `implementation-guidelines.md`.
 
 ### III. Modular Monolith First
 
@@ -89,19 +91,19 @@ The feature will be implemented inside the current Formica modular monolith solu
 
 Status: PASS.
 
-Business rules should remain independent from UI, HTTP, and persistence. `Formica.ApiService` is the host/API surface; Warehouse business behavior must stay inside logical module/feature code and remain extractable later.
+Business rules should remain independent from UI, HTTP, and persistence. `Formica.ApiService` is the host/API surface; Warehouse business behavior must stay inside logical module/feature code and remain extractable later. Domain code must not depend on Features, Endpoints, Persistence, Contracts, ASP.NET Core, or Blazor UI.
 
 ### V. Vertical Slice Delivery
 
 Status: PASS.
 
-Implementation should be organized around feature capabilities such as warehouse management, zone management, storage location management, SKU management, and warehouse layout viewing.
+Implementation should be organized around feature capabilities such as warehouse management, zone management, storage location management, SKU management, and warehouse layout viewing. `Features/` means application use cases and orchestration, not a generic shared-kernel folder.
 
 ### VI. DDD-Oriented Design
 
 Status: PASS.
 
-DDD concepts are useful for stable identities, value objects, uniqueness rules, lifecycle state, and domain terminology. Full aggregate complexity must be avoided where simple modeling is sufficient.
+DDD concepts are useful for stable identities, value objects, uniqueness rules, lifecycle state, and domain terminology. Full aggregate complexity must be avoided where simple modeling is sufficient. Domain models should be self-contained rich models without excessive ceremony.
 
 ### VII. Integration Isolation
 
@@ -194,6 +196,8 @@ Rationale:
 - avoids unnecessary SQL Server/Windows coupling;
 - leaves room for future operational data, outbox/inbox, JSONB, and analytical scenarios.
 
+EF Core migration files must not be generated automatically during foundational setup. Migrations are created only after explicit instruction and only when there is a coherent persisted entity model.
+
 ### TD-005: Use explicit domain concepts but avoid over-modeling
 
 The feature should model the following concepts explicitly:
@@ -216,9 +220,11 @@ Rationale:
 
 Avoid introducing full Inventory, Receiving, Putaway, Handling Unit, LPN, Product Catalog, or Slotting models in this feature.
 
-### TD-006: Addressing uses configurable warehouse-level rules
+### TD-006: Addressing uses configurable default rules
 
-Location addresses should be user-defined codes validated by configurable warehouse-level address rules.
+Location addresses should be user-defined codes validated by configurable default Warehouse Foundation address rules.
+
+For this milestone, Location Address Rules are the default address policy for the current Formica installation. They are not modeled as a Warehouse child entity during Phase 2. Warehouse-specific overrides may be introduced later only by an explicit feature decision.
 
 The first implementation should not require a fixed topology such as aisle/rack/level/position.
 
@@ -226,6 +232,7 @@ Rationale:
 
 - supports different warehouse address conventions;
 - avoids premature topology modeling;
+- avoids introducing `WarehouseId` as a placeholder primary key before Warehouse exists;
 - satisfies the spec clarification while keeping the first milestone simple.
 
 ### TD-007: Use deactivation rather than destructive removal for operational references
@@ -291,13 +298,14 @@ Rationale:
 
 ```text
 specs/001-warehouse-foundation/
-├── spec.md              # Feature specification: WHAT/WHY
-├── plan.md              # Implementation plan: HOW
-├── research.md          # Phase 0 research decisions
-├── data-model.md        # Phase 1 data/domain model design
-├── quickstart.md        # Phase 1 validation walkthrough
-├── contracts/           # Phase 1 API contracts, if needed
-└── tasks.md             # Phase 2 executable tasks; not created by this plan
+├── spec.md                         # Feature specification: WHAT/WHY
+├── plan.md                         # Implementation plan: HOW
+├── research.md                     # Phase 0 research decisions
+├── data-model.md                   # Phase 1 data/domain model design
+├── implementation-guidelines.md    # Binding implementation guardrails
+├── quickstart.md                   # Phase 1 validation walkthrough
+├── contracts/                      # Phase 1 API contracts, if needed
+└── tasks.md                        # Executable implementation tasks
 ```
 
 ### Source Code (repository root)
@@ -326,6 +334,9 @@ Formica.ApiService/
     │
     └── WarehouseFoundation/
         ├── Domain/
+        │   ├── Common/
+        │   ├── LocationAddressing/
+        │   └── StorageLocations/
         ├── Features/
         │   ├── Warehouses/
         │   ├── Zones/
