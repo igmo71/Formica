@@ -63,6 +63,52 @@ Domain models MUST NOT:
 
 Uniqueness checks that require persisted data belong in feature/application code and should be backed by database constraints when the corresponding persisted entities exist.
 
+## Domain Validation Primitives
+
+Domain validation uses minimal domain-level primitives, not an application-wide result framework.
+
+Expected primitives:
+
+- `DomainValidationFailure` describes a domain validation error with a stable `Code`, human-readable `Message`, and optional `Field`.
+- `DomainValidationResult` represents either valid state or one or more `DomainValidationFailure` values.
+
+Placement:
+
+```text
+Formica.ApiService/Warehouse/WarehouseFoundation/Domain/Common/Validation/
+  DomainValidationFailure.cs
+  DomainValidationResult.cs
+```
+
+Rules:
+
+- Domain validation primitives MUST NOT reference ASP.NET Core, HTTP, Blazor, EF Core, endpoint contracts, or `Features`.
+- Domain validation primitives MAY be used by rich domain models to report expected domain input/invariant errors without throwing exceptions.
+- Endpoint/application code MAY translate `DomainValidationResult` to HTTP validation responses.
+- Do not introduce a generic application-wide `Result<T>`, CQRS result framework, or third-party validation abstraction in Warehouse Foundation unless explicitly approved later.
+
+Expected shape:
+
+```csharp
+public sealed record DomainValidationFailure(
+    string Code,
+    string Message,
+    string? Field = null);
+
+public sealed record DomainValidationResult(
+    IReadOnlyList<DomainValidationFailure> Errors)
+{
+    public bool IsValid => Errors.Count == 0;
+
+    public static DomainValidationResult Valid { get; } = new([]);
+
+    public static DomainValidationResult Invalid(params DomainValidationFailure[] errors)
+        => errors.Length == 0 ? Valid : new(errors);
+}
+```
+
+Use `DomainValidationResult` for expected domain validation failures, such as invalid address format, negative capacity, invalid code, or too-long text. Use exceptions only for programming errors or impossible states, not as the default user-input validation mechanism.
+
 ## Identity Generation and EF Core
 
 Persisted Warehouse Foundation entities should use application/domain-generated GUID v7 identities.
