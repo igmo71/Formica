@@ -1,7 +1,7 @@
 # Tasks: Warehouse Foundation
 
 **Input**: Design documents from `specs/001-warehouse-foundation/`  
-**Prerequisites**: `spec.md`, `plan.md`, `research.md`, `data-model.md`, `contracts/api-contracts.md`, `quickstart.md`  
+**Prerequisites**: `spec.md`, `plan.md`, `research.md`, `data-model.md`, `implementation-guidelines.md`, `contracts/api-contracts.md`, `quickstart.md`  
 **Branch**: `001-warehouse-foundation`
 
 **Tests**: Included. The specification and quickstart require validation of user-visible behavior, uniqueness rules, lifecycle behavior, and API/UI readiness.
@@ -33,25 +33,27 @@
 
 **Critical**: No user story implementation should begin until this phase is complete.
 
+**Implementation Guardrails**: Phase 2 implementation MUST follow `specs/001-warehouse-foundation/implementation-guidelines.md`. In particular, Domain must not depend on Features, Location Address Rules must not use `WarehouseId` as a primary key, and EF Core migrations must not be created unless explicitly requested after a coherent persisted model exists.
+
 ### Domain and Persistence Foundation
 
 - [ ] T007 [P] Create lifecycle base abstractions or helper types in `Formica.ApiService/Warehouse/WarehouseFoundation/Domain/Common/`.
 - [ ] T008 [P] Create controlled value definitions for zone and storage location purposes in `Formica.ApiService/Warehouse/WarehouseFoundation/Domain/Common/`.
 - [ ] T009 [P] Create `StorageLocationCapacity` value-object-style type in `Formica.ApiService/Warehouse/WarehouseFoundation/Domain/StorageLocations/StorageLocationCapacity.cs`.
-- [ ] T010 [P] Create `LocationAddressRules` domain model in `Formica.ApiService/Warehouse/WarehouseFoundation/Domain/LocationAddressing/LocationAddressRules.cs`.
+- [ ] T010 [P] Create self-contained `LocationAddressRules` domain model in `Formica.ApiService/Warehouse/WarehouseFoundation/Domain/LocationAddressing/LocationAddressRules.cs` without dependencies on `Features`, `Endpoints`, `Persistence`, `Contracts`, ASP.NET Core, or Blazor UI.
 - [ ] T011 Create `WarehouseDbContext` in `Formica.ApiService/Warehouse/Persistence/WarehouseDbContext.cs`.
 - [ ] T012 Create EF Core configuration folder `Formica.ApiService/Warehouse/Persistence/Configurations/WarehouseFoundation/`.
 - [ ] T013 Create Warehouse persistence registration extension in `Formica.ApiService/Warehouse/Persistence/WarehousePersistenceServiceCollectionExtensions.cs`.
 - [ ] T014 Register Warehouse persistence and Warehouse Foundation endpoints in `Formica.ApiService/Program.cs`.
-- [ ] T015 Create initial EF Core migration for Warehouse Foundation under `Formica.ApiService/Warehouse/Persistence/Migrations/`.
+- [ ] T015 Prepare Warehouse Foundation migration infrastructure under `Formica.ApiService/Warehouse/Persistence/Migrations/` only if needed, but do not create EF Core migration files in Phase 2 without explicit instruction.
 
 ### API Foundation
 
 - [ ] T016 Create endpoint group registration entry point in `Formica.ApiService/Warehouse/WarehouseFoundation/Endpoints/WarehouseFoundationEndpoints.cs`.
 - [ ] T017 [P] Create shared API result/problem helpers in `Formica.ApiService/Warehouse/WarehouseFoundation/Endpoints/EndpointResults.cs`.
-- [ ] T018 [P] Create shared contract DTO folder and common DTOs in `Formica.ApiService/Warehouse/WarehouseFoundation/Contracts/`.
-- [ ] T019 [P] Create common validation helpers in `Formica.ApiService/Warehouse/WarehouseFoundation/Features/Common/Validation/`.
-- [ ] T020 [P] Create address normalization helper in `Formica.ApiService/Warehouse/WarehouseFoundation/Features/StorageLocations/NormalizeLocationAddress.cs`.
+- [ ] T018 [P] Create shared contract DTO folder and only currently needed common DTOs in `Formica.ApiService/Warehouse/WarehouseFoundation/Contracts/`.
+- [ ] T019 [P] Create simple domain validation primitives in `Formica.ApiService/Warehouse/WarehouseFoundation/Domain/Common/Validation/` for domain-level errors/results; do not place domain validation primitives under `Features/Common/Validation`.
+- [ ] T020 [P] Implement location address normalization behavior inside `LocationAddressRules` or `Formica.ApiService/Warehouse/WarehouseFoundation/Domain/LocationAddressing/`; do not create `Features/StorageLocations/NormalizeLocationAddress.cs` for domain behavior.
 
 ### Test Foundation
 
@@ -59,7 +61,7 @@
 - [ ] T022 Create PostgreSQL-backed persistence test fixture in `Formica.Tests/Warehouse/WarehouseFoundation/WarehousePersistenceFixture.cs`.
 - [ ] T023 [P] Create test data builders in `Formica.Tests/Warehouse/WarehouseFoundation/TestData/WarehouseFoundationTestData.cs`.
 
-**Checkpoint**: Persistence, endpoint registration, shared validation, and test fixtures are ready.
+**Checkpoint**: Persistence, endpoint registration, shared validation, and test fixtures are ready. No generated EF Core migration is expected from Phase 2 unless explicitly requested.
 
 ---
 
@@ -79,7 +81,7 @@
 
 - [ ] T027 [US1] Create `Warehouse` domain model in `Formica.ApiService/Warehouse/WarehouseFoundation/Domain/Warehouses/Warehouse.cs`.
 - [ ] T028 [US1] Create Warehouse EF configuration in `Formica.ApiService/Warehouse/Persistence/Configurations/WarehouseFoundation/WarehouseConfiguration.cs`.
-- [ ] T029 [US1] Create Location Address Rules EF configuration in `Formica.ApiService/Warehouse/Persistence/Configurations/WarehouseFoundation/LocationAddressRulesConfiguration.cs`.
+- [ ] T029 [US1] Create Location Address Rules EF configuration in `Formica.ApiService/Warehouse/Persistence/Configurations/WarehouseFoundation/LocationAddressRulesConfiguration.cs`, only if Location Address Rules are persisted with a coherent model and without using `WarehouseId` as a placeholder primary key.
 - [ ] T030 [US1] Create warehouse request/response DTOs in `Formica.ApiService/Warehouse/WarehouseFoundation/Contracts/Warehouses/`.
 - [ ] T031 [US1] Implement create warehouse feature in `Formica.ApiService/Warehouse/WarehouseFoundation/Features/Warehouses/CreateWarehouse.cs`.
 - [ ] T032 [US1] Implement list/get warehouse features in `Formica.ApiService/Warehouse/WarehouseFoundation/Features/Warehouses/`.
@@ -288,12 +290,16 @@
 
 ## Notes
 
+- Read and follow `specs/001-warehouse-foundation/implementation-guidelines.md` before implementing any task.
 - Tests should be written before implementation and should fail before the corresponding implementation task is completed.
 - Use lightweight command/query naming inside vertical slices: commands mutate state, queries read state.
 - Do not introduce MediatR, a global dispatcher, or a generic CQRS framework for this milestone.
 - Keep endpoint handlers thin; delegate behavior to feature/application/domain code.
 - Keep business rules out of EF configuration and Blazor API clients.
+- Keep Domain independent from Features, Endpoints, Persistence, Contracts, ASP.NET Core, and Blazor UI.
+- Keep reusable domain validation primitives under Domain, not under Features.
 - Keep `Formica.ApiService` as host/composition root; Warehouse business logic remains inside the logical Warehouse boundary.
+- Do not create EF Core migration files unless explicitly requested after a coherent persisted entity model exists.
 - Use default Blazor with Bootstrap for the first Warehouse Foundation UI implementation.
 - Do not introduce MudBlazor or another UI component framework unless a concrete implementation need is explicitly documented first.
 - Do not introduce external validation frameworks, mapping frameworks, or additional UI libraries for this milestone.
