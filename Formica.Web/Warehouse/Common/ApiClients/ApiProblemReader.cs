@@ -13,10 +13,10 @@ public static class ApiProblemReader
     {
         var fallback = response.StatusCode switch
         {
-            HttpStatusCode.BadRequest => "The warehouse request is invalid.",
-            HttpStatusCode.Conflict => "The warehouse conflicts with existing data.",
-            HttpStatusCode.NotFound => "The warehouse was not found.",
-            _ => "The warehouse request failed."
+            HttpStatusCode.BadRequest => "The request is invalid.",
+            HttpStatusCode.Conflict => "The request conflicts with existing data.",
+            HttpStatusCode.NotFound => "The requested resource was not found.",
+            _ => "The request failed."
         };
 
         var problem = await response.Content.ReadFromJsonAsync<ProblemDetails>(cancellationToken);
