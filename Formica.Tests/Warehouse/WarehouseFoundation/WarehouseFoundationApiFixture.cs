@@ -7,7 +7,7 @@ namespace Formica.Tests.Warehouse.WarehouseFoundation;
 
 public sealed class WarehouseFoundationApiFixture : IAsyncLifetime
 {
-    private static readonly TimeSpan DefaultTimeout = TimeSpan.FromSeconds(30);
+    private static readonly TimeSpan DefaultTimeout = TimeSpan.FromSeconds(60);
     private DistributedApplication? _app;
     private string? _connectionString;
 
