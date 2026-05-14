@@ -1,7 +1,11 @@
 var builder = DistributedApplication.CreateBuilder(args);
 
 var cache = builder.AddRedis("cache");
-var postgres = builder.AddPostgres("postgres");
+
+var postgres = builder.AddPostgres("postgres")
+    .WithDataVolume("formica-postgres-data")
+    .WithPgAdmin();
+
 var warehouseDatabase = postgres.AddDatabase("warehouse");
 
 var apiService = builder.AddProject<Projects.Formica_ApiService>("apiservice")
