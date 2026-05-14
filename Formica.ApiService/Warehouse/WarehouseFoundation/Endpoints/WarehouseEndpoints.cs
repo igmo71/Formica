@@ -11,13 +11,13 @@ public static class WarehouseEndpoints
         var warehouses = group.MapGroup("/warehouses")
             .WithTags("Warehouses");
 
-        warehouses.MapGet("/", ListAsync)
+        warehouses.MapGet("", ListAsync)
             .WithName("ListWarehouses");
 
         warehouses.MapGet("/{warehouseId:guid}", GetAsync)
             .WithName("GetWarehouse");
 
-        warehouses.MapPost("/", CreateAsync)
+        warehouses.MapPost("", CreateAsync)
             .WithName("CreateWarehouse");
 
         warehouses.MapPut("/{warehouseId:guid}", UpdateAsync)
@@ -34,12 +34,16 @@ public static class WarehouseEndpoints
 
     private static async Task<IResult> ListAsync(
         WarehouseDbContext dbContext,
-        bool includeInactive,
+        bool? includeInactive,
         CancellationToken cancellationToken)
     {
-        var warehouses = await ListWarehouses.HandleAsync(dbContext, includeInactive, cancellationToken);
+        var warehouses = await ListWarehouses.HandleAsync(dbContext, includeInactive == true, cancellationToken);
 
-        return TypedResults.Ok(warehouses.Select(WarehouseResponse.From));
+        var response = warehouses
+        .Select(warehouse => WarehouseResponse.From(warehouse))
+        .ToArray();
+
+        return TypedResults.Ok(response);
     }
 
     private static async Task<IResult> GetAsync(
