@@ -1,6 +1,5 @@
 using Formica.ApiService.Warehouse.Persistence;
 using Formica.ApiService.Warehouse.WarehouseFoundation.Contracts.Warehouses;
-using Formica.ApiService.Warehouse.WarehouseFoundation.Domain.LocationAddressing;
 using Formica.ApiService.Warehouse.WarehouseFoundation.Features.LocationAddressRules;
 
 namespace Formica.ApiService.Warehouse.WarehouseFoundation.Endpoints;
@@ -26,14 +25,6 @@ public static class LocationAddressRulesEndpoints
 
         return rules is null
             ? EndpointResults.NotFound()
-            : TypedResults.Ok(ToResponse(rules));
+            : TypedResults.Ok(LocationAddressRulesResponse.From(rules));
     }
-
-    private static LocationAddressRulesResponse ToResponse(LocationAddressRules rules)
-        => new(
-            rules.MaxLength,
-            rules.AllowedPattern,
-            rules.NormalizeToUppercase,
-            rules.TrimWhitespace,
-            rules.ZonePrefixRequired);
 }

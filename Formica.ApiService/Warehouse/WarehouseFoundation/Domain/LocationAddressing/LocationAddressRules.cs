@@ -1,6 +1,6 @@
-using System.Text.RegularExpressions;
 using Formica.ApiService.Warehouse.WarehouseFoundation.Domain.Common;
 using Formica.ApiService.Warehouse.WarehouseFoundation.Domain.Common.Validation;
+using System.Text.RegularExpressions;
 
 namespace Formica.ApiService.Warehouse.WarehouseFoundation.Domain.LocationAddressing;
 

@@ -41,7 +41,7 @@ public static class UpdateWarehouse
                 ConflictCode: "Warehouse.CodeNotUnique");
         }
 
-        _ = warehouse.TryUpdate(command.Code, command.Name, command.Description);
+        warehouse.Update(command.Code, command.Name, command.Description);
         await dbContext.SaveChangesAsync(cancellationToken);
 
         return new(WarehouseFeatureStatus.Success, warehouse);

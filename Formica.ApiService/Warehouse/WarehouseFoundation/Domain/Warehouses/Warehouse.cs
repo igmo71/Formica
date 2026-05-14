@@ -34,31 +34,23 @@ public sealed class Warehouse : EntityLifecycle
         string? description,
         out Warehouse? warehouse)
     {
-        var result = Validate(code, name, description);
-        if (!result.IsValid)
+        var validationResult = Validate(code, name, description);
+        if (!validationResult.IsValid)
         {
             warehouse = null;
-            return result;
+            return validationResult;
         }
 
         warehouse = new Warehouse(NormalizeCode(code), NormalizeRequiredText(name), description);
         return DomainValidationResult.Valid;
     }
 
-    public DomainValidationResult TryUpdate(string? code, string? name, string? description)
+    public void Update(string? code, string? name, string? description)
     {
-        var result = Validate(code, name, description);
-        if (!result.IsValid)
-        {
-            return result;
-        }
-
         Code = NormalizeCode(code);
         Name = NormalizeRequiredText(name);
         Description = NormalizeOptionalText(description);
         Touch();
-
-        return DomainValidationResult.Valid;
     }
 
     public static DomainValidationResult Validate(string? code, string? name, string? description)

@@ -4,6 +4,7 @@
 @using Microsoft.AspNetCore.Components.Forms
 @using Microsoft.AspNetCore.Components.Web
 @using static Microsoft.AspNetCore.Components.Web.RenderMode
+@using Formica.Web.Warehouse.Common.ApiClients
 @using Formica.Web.Warehouse.WarehouseFoundation.ApiClients
 @inject WarehouseFoundationApiClient WarehouseApi
 
@@ -122,20 +123,20 @@
 
     private async Task SaveAsync()
     {
-        ApiClientResult<WarehouseResponse> result;
+        ApiClientResult<WarehouseResponse> apiResult;
 
         if (editingId is null)
         {
-            result = await WarehouseApi.CreateWarehouseAsync(new(form.Code, form.Name, form.Description));
-            message = result.IsSuccess ? "Warehouse created." : result.ErrorMessage;
+            apiResult = await WarehouseApi.CreateWarehouseAsync(new(form.Code, form.Name, form.Description));
+            message = apiResult.IsSuccess ? "Warehouse created." : apiResult.ErrorMessage;
         }
         else
         {
-            result = await WarehouseApi.UpdateWarehouseAsync(editingId.Value, new(form.Code, form.Name, form.Description));
-            message = result.IsSuccess ? "Warehouse updated." : result.ErrorMessage;
+            apiResult = await WarehouseApi.UpdateWarehouseAsync(editingId.Value, new(form.Code, form.Name, form.Description));
+            message = apiResult.IsSuccess ? "Warehouse updated." : apiResult.ErrorMessage;
         }
 
-        if (result.IsSuccess)
+        if (apiResult.IsSuccess)
         {
             ResetForm();
             await LoadAsync();
@@ -156,15 +157,15 @@
 
     private async Task DeactivateAsync(Guid warehouseId)
     {
-        var result = await WarehouseApi.DeactivateWarehouseAsync(warehouseId);
-        message = result.IsSuccess ? "Warehouse deactivated." : result.ErrorMessage;
+        var apiResult = await WarehouseApi.DeactivateWarehouseAsync(warehouseId);
+        message = apiResult.IsSuccess ? "Warehouse deactivated." : apiResult.ErrorMessage;
         await LoadAsync();
     }
 
     private async Task ReactivateAsync(Guid warehouseId)
     {
-        var result = await WarehouseApi.ReactivateWarehouseAsync(warehouseId);
-        message = result.IsSuccess ? "Warehouse reactivated." : result.ErrorMessage;
+        var apiResult = await WarehouseApi.ReactivateWarehouseAsync(warehouseId);
+        message = apiResult.IsSuccess ? "Warehouse reactivated." : apiResult.ErrorMessage;
         await LoadAsync();
     }
 

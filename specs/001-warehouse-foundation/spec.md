@@ -135,6 +135,8 @@ As a system stakeholder, I want the warehouse foundation to maintain stable refe
 - **FR-025**: The system MUST use deactivation and reactivation as the primary lifecycle mechanism for operational reference data that may be used by future workflows.
 - **FR-026**: The system MUST NOT require physical deletion of warehouses, zones, storage locations, or SKUs for normal user workflows.
 - **FR-027**: If physical deletion is introduced later, it MUST be limited to reference records that have never been used by operational workflows or referenced by other records.
+- **FR-028**: Future operational and integration workflows MAY use event-driven patterns, but Warehouse Foundation MUST NOT introduce domain events, outbox processing, message buses, dispatchers, or integration event contracts until those workflows are explicitly specified.
+- **FR-029**: Warehouse Foundation MUST preserve stable IDs, explicit lifecycle state transitions, and timestamps so future events can be added without changing public semantics.
 
 ### Non-Goals / Out of Scope
 
