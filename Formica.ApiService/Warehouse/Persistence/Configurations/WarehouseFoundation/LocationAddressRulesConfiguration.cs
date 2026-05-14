@@ -16,7 +16,7 @@ public sealed class LocationAddressRulesConfiguration : IEntityTypeConfiguration
             .ValueGeneratedNever();
 
         builder.Property(rules => rules.Code)
-            .HasMaxLength(32)
+            .HasMaxLength(LocationAddressRules.MaxCodeLength)
             .IsRequired();
 
         builder.HasIndex(rules => rules.Code)
@@ -26,7 +26,7 @@ public sealed class LocationAddressRulesConfiguration : IEntityTypeConfiguration
             .IsRequired();
 
         builder.Property(rules => rules.AllowedPattern)
-            .HasMaxLength(500);
+            .HasMaxLength(LocationAddressRules.MaxAllowedPatternLength);
 
         builder.Property(rules => rules.NormalizeToUppercase)
             .IsRequired();

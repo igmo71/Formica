@@ -172,7 +172,7 @@ Request:
 Behavior:
 
 - creates a Warehouse;
-- creates default Location Address Rules for the Warehouse;
+- ensures default Warehouse Foundation Location Address Rules exist;
 - rejects duplicate warehouse code.
 
 Response:
@@ -406,8 +406,8 @@ Request:
 
 Behavior:
 
-- validates address against the Warehouse's Location Address Rules;
-- normalizes address according to the Warehouse's Location Address Rules;
+- validates address against the default Warehouse Foundation Location Address Rules;
+- normalizes address according to the default Warehouse Foundation Location Address Rules;
 - rejects duplicate normalized address within the same Warehouse;
 - validates that `zoneId` belongs to the same Warehouse as `warehouseId`.
 
@@ -660,23 +660,22 @@ Possible `setupReadiness.status` values:
 
 ## Location Address Rules
 
-Location Address Rules are created automatically with default values when a Warehouse is created.
+Location Address Rules are the default Warehouse Foundation address policy for this milestone, not a Warehouse-owned child resource.
 
-Full UI/API management for Location Address Rules is deferred.
+Full UI/API management and Warehouse-specific overrides for Location Address Rules are deferred.
 
 The `allowedPattern` value shown below is a suggested default for the first implementation, not a finalized long-term address-pattern language.
 
 ### Get Location Address Rules
 
 ```http
-GET /api/warehouse-foundation/warehouses/{warehouseId}/location-address-rules
+GET /api/warehouse-foundation/location-address-rules/default
 ```
 
 Response:
 
 ```json
 {
-  "warehouseId": "00000000-0000-0000-0000-000000000000",
   "maxLength": 50,
   "allowedPattern": "^[A-Z0-9][A-Z0-9\\-_.]*$",
   "normalizeToUppercase": true,

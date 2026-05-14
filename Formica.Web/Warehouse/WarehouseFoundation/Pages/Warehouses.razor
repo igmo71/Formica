@@ -122,20 +122,20 @@
 
     private async Task SaveAsync()
     {
-        WarehouseResponse? saved;
+        ApiClientResult<WarehouseResponse> result;
 
         if (editingId is null)
         {
-            saved = await WarehouseApi.CreateWarehouseAsync(new(form.Code, form.Name, form.Description));
-            message = saved is null ? "Warehouse could not be created." : "Warehouse created.";
+            result = await WarehouseApi.CreateWarehouseAsync(new(form.Code, form.Name, form.Description));
+            message = result.IsSuccess ? "Warehouse created." : result.ErrorMessage;
         }
         else
         {
-            saved = await WarehouseApi.UpdateWarehouseAsync(editingId.Value, new(form.Code, form.Name, form.Description));
-            message = saved is null ? "Warehouse could not be updated." : "Warehouse updated.";
+            result = await WarehouseApi.UpdateWarehouseAsync(editingId.Value, new(form.Code, form.Name, form.Description));
+            message = result.IsSuccess ? "Warehouse updated." : result.ErrorMessage;
         }
 
-        if (saved is not null)
+        if (result.IsSuccess)
         {
             ResetForm();
             await LoadAsync();
@@ -156,15 +156,15 @@
 
     private async Task DeactivateAsync(Guid warehouseId)
     {
-        var warehouse = await WarehouseApi.DeactivateWarehouseAsync(warehouseId);
-        message = warehouse is null ? "Warehouse could not be deactivated." : "Warehouse deactivated.";
+        var result = await WarehouseApi.DeactivateWarehouseAsync(warehouseId);
+        message = result.IsSuccess ? "Warehouse deactivated." : result.ErrorMessage;
         await LoadAsync();
     }
 
     private async Task ReactivateAsync(Guid warehouseId)
     {
-        var warehouse = await WarehouseApi.ReactivateWarehouseAsync(warehouseId);
-        message = warehouse is null ? "Warehouse could not be reactivated." : "Warehouse reactivated.";
+        var result = await WarehouseApi.ReactivateWarehouseAsync(warehouseId);
+        message = result.IsSuccess ? "Warehouse reactivated." : result.ErrorMessage;
         await LoadAsync();
     }
 

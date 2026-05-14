@@ -23,14 +23,13 @@ public sealed class DefaultLocationAddressRulesTests(WarehouseFoundationApiFixtu
         Assert.NotNull(created);
 
         var rulesResponse = await fixture.ApiClient.GetAsync(
-            $"/api/warehouse-foundation/warehouses/{created.Id}/location-address-rules",
+            "/api/warehouse-foundation/location-address-rules/default",
             cancellationToken);
 
         Assert.Equal(HttpStatusCode.OK, rulesResponse.StatusCode);
 
         var rules = await rulesResponse.Content.ReadFromJsonAsync<LocationAddressRulesResponse>(cancellationToken);
         Assert.NotNull(rules);
-        Assert.Equal(created.Id, rules.WarehouseId);
         Assert.Equal(LocationAddressRules.DefaultMaxLength, rules.MaxLength);
         Assert.True(rules.NormalizeToUppercase);
         Assert.True(rules.TrimWhitespace);

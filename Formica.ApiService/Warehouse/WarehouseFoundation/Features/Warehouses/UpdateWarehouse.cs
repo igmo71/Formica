@@ -22,6 +22,12 @@ public static class UpdateWarehouse
             return new(WarehouseFeatureStatus.NotFound);
         }
 
+        var validationResult = WarehouseEntity.Validate(command.Code, command.Name, command.Description);
+        if (!validationResult.IsValid)
+        {
+            return new(WarehouseFeatureStatus.ValidationFailed, ValidationResult: validationResult);
+        }
+
         var normalizedCode = WarehouseEntity.NormalizeCode(command.Code);
         var codeInUse = await dbContext.Warehouses.AnyAsync(
             existing => existing.Id != warehouseId && existing.Code == normalizedCode,
@@ -35,12 +41,7 @@ public static class UpdateWarehouse
                 ConflictCode: "Warehouse.CodeNotUnique");
         }
 
-        var validationResult = warehouse.TryUpdate(command.Code, command.Name, command.Description);
-        if (!validationResult.IsValid)
-        {
-            return new(WarehouseFeatureStatus.ValidationFailed, ValidationResult: validationResult);
-        }
-
+        _ = warehouse.TryUpdate(command.Code, command.Name, command.Description);
         await dbContext.SaveChangesAsync(cancellationToken);
 
         return new(WarehouseFeatureStatus.Success, warehouse);

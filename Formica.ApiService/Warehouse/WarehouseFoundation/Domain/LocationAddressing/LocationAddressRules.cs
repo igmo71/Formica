@@ -7,7 +7,9 @@ namespace Formica.ApiService.Warehouse.WarehouseFoundation.Domain.LocationAddres
 public sealed class LocationAddressRules : EntityLifecycle
 {
     public const string DefaultCode = "DEFAULT";
+    public const int MaxCodeLength = 32;
     public const int DefaultMaxLength = 50;
+    public const int MaxAllowedPatternLength = 500;
     public const string DefaultAllowedPattern = "^[A-Z0-9][A-Z0-9\\-_.]*$";
 
     private LocationAddressRules(

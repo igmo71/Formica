@@ -1,6 +1,5 @@
 using Formica.ApiService.Warehouse.Persistence;
 using Formica.ApiService.Warehouse.WarehouseFoundation.Contracts.Warehouses;
-using Formica.ApiService.Warehouse.WarehouseFoundation.Domain.LocationAddressing;
 using Formica.ApiService.Warehouse.WarehouseFoundation.Features.Warehouses;
 using WarehouseEntity = Formica.ApiService.Warehouse.WarehouseFoundation.Domain.Warehouses.Warehouse;
 
@@ -30,9 +29,6 @@ public static class WarehouseEndpoints
 
         warehouses.MapPost("/{warehouseId:guid}/reactivate", ReactivateAsync)
             .WithName("ReactivateWarehouse");
-
-        warehouses.MapGet("/{warehouseId:guid}/location-address-rules", GetLocationAddressRulesAsync)
-            .WithName("GetWarehouseLocationAddressRules");
 
         return group;
     }
@@ -107,25 +103,6 @@ public static class WarehouseEndpoints
         return ToWriteResult(result);
     }
 
-    private static async Task<IResult> GetLocationAddressRulesAsync(
-        WarehouseDbContext dbContext,
-        Guid warehouseId,
-        CancellationToken cancellationToken)
-    {
-        var result = await GetDefaultLocationAddressRules.HandleAsync(
-            dbContext,
-            warehouseId,
-            cancellationToken);
-
-        return result.Status switch
-        {
-            WarehouseFeatureStatus.Success when result.Rules is not null
-                => TypedResults.Ok(ToResponse(warehouseId, result.Rules)),
-            WarehouseFeatureStatus.NotFound => EndpointResults.NotFound(),
-            _ => throw new InvalidOperationException("Unexpected location address rules result.")
-        };
-    }
-
     private static IResult ToWriteResult(WarehouseFeatureResult result, bool created = false)
     {
         return result.Status switch
@@ -156,13 +133,4 @@ public static class WarehouseEndpoints
             warehouse.IsActive,
             warehouse.CreatedAtUtc,
             warehouse.UpdatedAtUtc);
-
-    private static LocationAddressRulesResponse ToResponse(Guid warehouseId, LocationAddressRules rules)
-        => new(
-            warehouseId,
-            rules.MaxLength,
-            rules.AllowedPattern,
-            rules.NormalizeToUppercase,
-            rules.TrimWhitespace,
-            rules.ZonePrefixRequired);
 }

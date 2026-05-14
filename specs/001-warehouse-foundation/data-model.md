@@ -141,7 +141,7 @@ A physical or logical warehouse where stock is stored, controlled, received, mov
 
 - Warehouse has many Zones.
 - Warehouse has many Storage Locations through Zones.
-- Warehouse has one Location Address Rules configuration for this milestone, unless Phase 1 design later decides that default rules are global.
+- Warehouse uses the default Warehouse Foundation Location Address Rules policy for this milestone.
 
 ### Invariants
 
@@ -240,7 +240,7 @@ An addressable warehouse place where stock can be stored or processed.
 
 - Storage Location Address is required.
 - Storage Location Address is unique within its Warehouse.
-- Storage Location Address must satisfy the Warehouse's Location Address Rules.
+- Storage Location Address must satisfy the default Warehouse Foundation Location Address Rules.
 - Storage Location Purpose is required.
 - Storage Location identity remains stable when Address, Name, Purpose, or Capacity changes.
 - Storage Location can be deactivated and reactivated.
@@ -254,13 +254,16 @@ An addressable warehouse place where stock can be stored or processed.
 
 ### Meaning
 
-Warehouse-level validation rules for user-defined storage location addresses.
+Default Warehouse Foundation validation rules for user-defined storage location addresses.
+
+For this milestone, Location Address Rules are a foundation-level policy, not a Warehouse-owned child entity. Warehouse-specific address rule overrides are deferred to a future explicit feature decision.
 
 ### Suggested Attributes
 
 | Attribute | Required | Notes |
 |-----------|----------|-------|
-| WarehouseId | Yes | Warehouse whose addresses are governed by the rules. |
+| Id | Yes | Stable technical identity. |
+| Code | Yes | Stable rules code, such as `DEFAULT`; unique for the foundation policy. |
 | MaxLength | Yes | Maximum accepted address length. |
 | AllowedPattern | No | Optional validation pattern. |
 | NormalizeToUppercase | Yes | Whether address values are normalized to uppercase. |
@@ -278,7 +281,7 @@ Warehouse-level validation rules for user-defined storage location addresses.
 
 ### Notes
 
-Location Address Rules are not an address generator. Generated ranges and topology-aware address creation are deferred.
+Location Address Rules are not an address generator. Generated ranges, topology-aware address creation, and warehouse-specific overrides are deferred.
 
 ## Storage Location Capacity
 
@@ -478,9 +481,10 @@ These indicators do not introduce a new domain entity or workflow state. They ar
 
 ```text
 Warehouse
-├── LocationAddressRules
 └── Zones
     └── StorageLocations
+
+Default LocationAddressRules apply at the Warehouse Foundation level.
 
 SKU
 ├── BaseUnitOfMeasure
@@ -521,7 +525,7 @@ SKU is independent from Warehouse in this milestone. Future inventory features w
 ### Addressing
 
 - Location Address is required.
-- Location Address must satisfy Warehouse-level Location Address Rules.
+- Location Address must satisfy the default Warehouse Foundation Location Address Rules.
 - Location Address uniqueness must be evaluated within Warehouse scope after normalization.
 
 ### Capacity
@@ -542,7 +546,8 @@ This milestone should avoid heavy aggregate ceremony.
 
 Suggested ownership boundaries:
 
-- Warehouse owns its setup relationship to Zones and Location Address Rules conceptually.
+- Warehouse owns its setup relationship to Zones conceptually.
+- Location Address Rules are a foundation-level policy in this milestone, not owned by Warehouse.
 - Zone owns its relationship to Storage Locations conceptually.
 - SKU owns its Barcode Values conceptually.
 - Unit of Measure may be a simple reference entity or controlled reference set.
@@ -617,7 +622,7 @@ Rationale: filtering controls which records are included, while `IsActive` commu
 
 ### OQ-004: Location Address Rules management
 
-Create default Location Address Rules automatically when a Warehouse is created.
+Ensure default Location Address Rules exist when Warehouse Foundation is initialized by the first warehouse creation path.
 
 Initial defaults:
 
@@ -627,7 +632,7 @@ Initial defaults:
 - AllowedPattern: simple warehouse-safe address pattern;
 - ZonePrefixRequired: false.
 
-Full UI management for Location Address Rules is deferred.
+Full UI management and warehouse-specific ownership for Location Address Rules are deferred.
 
 Rationale: address rules are needed to keep Storage Location addresses consistent, but building a full rule-management UI would unnecessarily expand Warehouse Foundation.
 

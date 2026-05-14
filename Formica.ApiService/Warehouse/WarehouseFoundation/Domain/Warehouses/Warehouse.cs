@@ -110,7 +110,9 @@ public sealed class Warehouse : EntityLifecycle
         => NormalizeRequiredText(code).ToUpperInvariant();
 
     private static string NormalizeRequiredText(string? value)
-        => value?.Trim() ?? string.Empty;
+    {
+        return value?.Trim() ?? string.Empty;
+    }
 
     private static string? NormalizeOptionalText(string? value)
     {

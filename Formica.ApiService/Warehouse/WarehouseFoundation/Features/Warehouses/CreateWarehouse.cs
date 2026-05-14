@@ -1,6 +1,6 @@
 using Formica.ApiService.Warehouse.Persistence;
-using Formica.ApiService.Warehouse.WarehouseFoundation.Domain.LocationAddressing;
 using Microsoft.EntityFrameworkCore;
+using LocationAddressRulesEntity = Formica.ApiService.Warehouse.WarehouseFoundation.Domain.LocationAddressing.LocationAddressRules;
 using WarehouseEntity = Formica.ApiService.Warehouse.WarehouseFoundation.Domain.Warehouses.Warehouse;
 
 namespace Formica.ApiService.Warehouse.WarehouseFoundation.Features.Warehouses;
@@ -38,10 +38,10 @@ public static class CreateWarehouse
         dbContext.Warehouses.Add(warehouse);
 
         if (!await dbContext.LocationAddressRules.AnyAsync(
-            rules => rules.Code == LocationAddressRules.DefaultCode,
+            rules => rules.Code == LocationAddressRulesEntity.DefaultCode,
             cancellationToken))
         {
-            dbContext.LocationAddressRules.Add(LocationAddressRules.CreateDefault());
+            dbContext.LocationAddressRules.Add(LocationAddressRulesEntity.CreateDefault());
         }
 
         await dbContext.SaveChangesAsync(cancellationToken);
