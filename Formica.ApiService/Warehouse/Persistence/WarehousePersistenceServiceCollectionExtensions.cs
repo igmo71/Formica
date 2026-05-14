@@ -20,7 +20,6 @@ public static class WarehousePersistenceServiceCollectionExtensions
 
             options.UseNpgsql(connectionString);
         });
-
         return services;
     }
 }

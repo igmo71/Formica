@@ -86,10 +86,10 @@ Request:
 
 ### Action
 
-Get Location Address Rules for the created Warehouse:
+Get the default Warehouse Foundation Location Address Rules:
 
 ```http
-GET /api/warehouse-foundation/warehouses/{warehouseId}/location-address-rules
+GET /api/warehouse-foundation/location-address-rules/default
 ```
 
 ### Expected Result
@@ -495,7 +495,7 @@ Automated tests should cover at least:
 - active/inactive lifecycle;
 - reactivation validation;
 - `isActive` in list/detail/layout responses;
-- default Location Address Rules creation;
+- default Location Address Rules availability;
 - seeded read-only Unit of Measure availability;
 - Warehouse Layout setup readiness indicators.
 
@@ -507,6 +507,6 @@ Warehouse Foundation is ready for task completion when:
 - Warehouse Layout shows configured Warehouse → Zones → Storage Locations;
 - uniqueness rules are enforced by validation and database constraints;
 - response models expose lifecycle state through `isActive`;
-- default Location Address Rules exist for created Warehouses;
+- default Location Address Rules exist for Warehouse Foundation;
 - seeded Units of Measure are available for SKUs;
 - no out-of-scope workflow is implemented accidentally.

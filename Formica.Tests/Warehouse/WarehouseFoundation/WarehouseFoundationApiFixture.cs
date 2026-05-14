@@ -1,4 +1,6 @@
 using Aspire.Hosting;
+using Formica.ApiService.Warehouse.Persistence;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 namespace Formica.Tests.Warehouse.WarehouseFoundation;
@@ -7,6 +9,7 @@ public sealed class WarehouseFoundationApiFixture : IAsyncLifetime
 {
     private static readonly TimeSpan DefaultTimeout = TimeSpan.FromSeconds(30);
     private DistributedApplication? _app;
+    private string? _connectionString;
 
     public HttpClient ApiClient { get; private set; } = null!;
 
@@ -27,11 +30,37 @@ public sealed class WarehouseFoundationApiFixture : IAsyncLifetime
         });
 
         _app = await appHost.BuildAsync(cancellationToken).WaitAsync(DefaultTimeout, cancellationToken);
+
         await _app.StartAsync(cancellationToken).WaitAsync(DefaultTimeout, cancellationToken);
+
         await _app.ResourceNotifications.WaitForResourceHealthyAsync("apiservice", cancellationToken)
             .WaitAsync(DefaultTimeout, cancellationToken);
 
         ApiClient = _app.CreateHttpClient("apiservice");
+
+        await _app.ResourceNotifications.WaitForResourceHealthyAsync("warehouse", cancellationToken)
+            .WaitAsync(DefaultTimeout, cancellationToken);
+
+        _connectionString = await _app.GetConnectionStringAsync("warehouse", cancellationToken)
+            .AsTask()
+            .WaitAsync(DefaultTimeout, cancellationToken);
+
+        await using var dbContext = CreateDbContext();
+        await dbContext.Database.EnsureCreatedAsync(cancellationToken);
+    }
+
+    public WarehouseDbContext CreateDbContext()
+    {
+        if (string.IsNullOrWhiteSpace(_connectionString))
+        {
+            throw new InvalidOperationException("Warehouse persistence fixture has not been initialized.");
+        }
+
+        var options = new DbContextOptionsBuilder<WarehouseDbContext>()
+            .UseNpgsql(_connectionString)
+            .Options;
+
+        return new WarehouseDbContext(options);
     }
 
     public async ValueTask DisposeAsync()

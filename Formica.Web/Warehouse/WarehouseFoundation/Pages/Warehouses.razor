@@ -1,0 +1,186 @@
+@page "/warehouse-foundation/warehouses"
+@rendermode InteractiveServer
+
+@using Microsoft.AspNetCore.Components.Forms
+@using Microsoft.AspNetCore.Components.Web
+@using static Microsoft.AspNetCore.Components.Web.RenderMode
+@using Formica.Web.Warehouse.Common.ApiClients
+@using Formica.Web.Warehouse.WarehouseFoundation.ApiClients
+@inject WarehouseFoundationApiClient WarehouseApi
+
+<PageTitle>Warehouses</PageTitle>
+
+<h1>Warehouses</h1>
+
+<div class="row g-4">
+    <div class="col-lg-4">
+        <EditForm Model="form" OnValidSubmit="SaveAsync">
+            <div class="mb-3">
+                <label class="form-label" for="warehouse-code">Code</label>
+                <InputText id="warehouse-code" class="form-control" @bind-Value="form.Code" maxlength="32" />
+            </div>
+            <div class="mb-3">
+                <label class="form-label" for="warehouse-name">Name</label>
+                <InputText id="warehouse-name" class="form-control" @bind-Value="form.Name" maxlength="200" />
+            </div>
+            <div class="mb-3">
+                <label class="form-label" for="warehouse-description">Description</label>
+                <InputTextArea id="warehouse-description" class="form-control" @bind-Value="form.Description" rows="3" maxlength="1000" />
+            </div>
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-primary">@submitLabel</button>
+                @if (editingId is not null)
+                {
+                    <button type="button" class="btn btn-outline-secondary" @onclick="ResetForm">Cancel</button>
+                }
+            </div>
+        </EditForm>
+
+        @if (!string.IsNullOrWhiteSpace(message))
+        {
+            <div class="alert alert-info mt-3" role="status">@message</div>
+        }
+    </div>
+
+    <div class="col-lg-8">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <div class="form-check">
+                <InputCheckbox id="include-inactive" class="form-check-input" @bind-Value="includeInactive" @bind-Value:after="LoadAsync" />
+                <label class="form-check-label" for="include-inactive">Include inactive</label>
+            </div>
+            <button type="button" class="btn btn-outline-secondary btn-sm" @onclick="LoadAsync">Refresh</button>
+        </div>
+
+        @if (warehouses is null)
+        {
+            <p><em>Loading...</em></p>
+        }
+        else if (warehouses.Count == 0)
+        {
+            <p>No warehouses found.</p>
+        }
+        else
+        {
+            <table class="table align-middle">
+                <thead>
+                    <tr>
+                        <th>Code</th>
+                        <th>Name</th>
+                        <th>Status</th>
+                        <th>Description</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var warehouse in warehouses)
+                    {
+                        <tr>
+                            <td>@warehouse.Code</td>
+                            <td>@warehouse.Name</td>
+                            <td>
+                                <span class="badge @(warehouse.IsActive ? "text-bg-success" : "text-bg-secondary")">
+                                    @(warehouse.IsActive ? "Active" : "Inactive")
+                                </span>
+                            </td>
+                            <td>@warehouse.Description</td>
+                            <td class="text-end">
+                                <button type="button" class="btn btn-outline-primary btn-sm me-2" @onclick="() => Edit(warehouse)">Edit</button>
+                                @if (warehouse.IsActive)
+                                {
+                                    <button type="button" class="btn btn-outline-warning btn-sm" @onclick="() => DeactivateAsync(warehouse.Id)">Deactivate</button>
+                                }
+                                else
+                                {
+                                    <button type="button" class="btn btn-outline-success btn-sm" @onclick="() => ReactivateAsync(warehouse.Id)">Reactivate</button>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+    </div>
+</div>
+
+@code {
+    private List<WarehouseResponse>? warehouses;
+    private WarehouseForm form = new();
+    private Guid? editingId;
+    private bool includeInactive;
+    private string? message;
+
+    private string submitLabel => editingId is null ? "Create" : "Update";
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadAsync();
+    }
+
+    private async Task LoadAsync()
+    {
+        warehouses = [.. await WarehouseApi.ListWarehousesAsync(includeInactive)];
+    }
+
+    private async Task SaveAsync()
+    {
+        ApiClientResult<WarehouseResponse> apiResult;
+
+        if (editingId is null)
+        {
+            apiResult = await WarehouseApi.CreateWarehouseAsync(new(form.Code, form.Name, form.Description));
+            message = apiResult.IsSuccess ? "Warehouse created." : apiResult.ErrorMessage;
+        }
+        else
+        {
+            apiResult = await WarehouseApi.UpdateWarehouseAsync(editingId.Value, new(form.Code, form.Name, form.Description));
+            message = apiResult.IsSuccess ? "Warehouse updated." : apiResult.ErrorMessage;
+        }
+
+        if (apiResult.IsSuccess)
+        {
+            ResetForm();
+            await LoadAsync();
+        }
+    }
+
+    private void Edit(WarehouseResponse warehouse)
+    {
+        editingId = warehouse.Id;
+        form = new()
+        {
+            Code = warehouse.Code,
+            Name = warehouse.Name,
+            Description = warehouse.Description
+        };
+        message = null;
+    }
+
+    private async Task DeactivateAsync(Guid warehouseId)
+    {
+        var apiResult = await WarehouseApi.DeactivateWarehouseAsync(warehouseId);
+        message = apiResult.IsSuccess ? "Warehouse deactivated." : apiResult.ErrorMessage;
+        await LoadAsync();
+    }
+
+    private async Task ReactivateAsync(Guid warehouseId)
+    {
+        var apiResult = await WarehouseApi.ReactivateWarehouseAsync(warehouseId);
+        message = apiResult.IsSuccess ? "Warehouse reactivated." : apiResult.ErrorMessage;
+        await LoadAsync();
+    }
+
+    private void ResetForm()
+    {
+        editingId = null;
+        form = new();
+    }
+
+    private sealed class WarehouseForm
+    {
+        public string? Code { get; set; }
+
+        public string? Name { get; set; }
+
+        public string? Description { get; set; }
+    }
+}
