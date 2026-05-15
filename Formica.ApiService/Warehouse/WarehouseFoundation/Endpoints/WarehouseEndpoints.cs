@@ -43,7 +43,9 @@ public static class WarehouseEndpoints
 
         if (!featureResult.IsSuccess || featureResult.Value is null)
         {
-            throw new InvalidOperationException("Unexpected warehouse list feature result.");
+            return TypedResults.Problem(
+                title: "Unexpected warehouse list result.",
+                statusCode: StatusCodes.Status500InternalServerError);
         }
 
         var response = featureResult.Value
