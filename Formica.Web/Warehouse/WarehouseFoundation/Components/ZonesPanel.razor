@@ -1,0 +1,247 @@
+@using Microsoft.AspNetCore.Components.Forms
+@using Formica.Web.Warehouse.Common.ApiClients
+@using Formica.Web.Warehouse.WarehouseFoundation.ApiClients
+@inject WarehouseFoundationApiClient WarehouseApi
+
+<section class="mt-4">
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+        <div>
+            <h2 class="h4 mb-1">Zones</h2>
+            <div class="text-body-secondary">@WarehouseName</div>
+        </div>
+        <div class="d-flex align-items-center gap-3">
+            <div class="form-check">
+                <InputCheckbox id="@includeInactiveId" class="form-check-input" @bind-Value="includeInactive" @bind-Value:after="LoadAsync" />
+                <label class="form-check-label" for="@includeInactiveId">Include inactive</label>
+            </div>
+            <button type="button" class="btn btn-outline-secondary btn-sm" @onclick="LoadAsync">Refresh</button>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-lg-4">
+            <EditForm Model="form" OnValidSubmit="SaveAsync">
+                <div class="mb-3">
+                    <label class="form-label" for="@codeInputId">Code</label>
+                    <InputText id="@codeInputId" class="form-control" @bind-Value="form.Code" maxlength="32" />
+                </div>
+                <div class="mb-3">
+                    <label class="form-label" for="@nameInputId">Name</label>
+                    <InputText id="@nameInputId" class="form-control" @bind-Value="form.Name" maxlength="200" />
+                </div>
+                <div class="mb-3">
+                    <label class="form-label" for="@purposeInputId">Purpose</label>
+                    <InputSelect id="@purposeInputId" class="form-select" @bind-Value="form.Purpose">
+                        @foreach (var purpose in ZonePurposes)
+                        {
+                            <option value="@purpose">@purpose</option>
+                        }
+                    </InputSelect>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label" for="@descriptionInputId">Description</label>
+                    <InputTextArea id="@descriptionInputId" class="form-control" @bind-Value="form.Description" rows="3" maxlength="1000" />
+                </div>
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-primary">@submitLabel</button>
+                    @if (editingId is not null)
+                    {
+                        <button type="button" class="btn btn-outline-secondary" @onclick="ResetForm">Cancel</button>
+                    }
+                </div>
+            </EditForm>
+
+            @if (!string.IsNullOrWhiteSpace(message))
+            {
+                <div class="alert alert-info mt-3" role="status">@message</div>
+            }
+        </div>
+
+        <div class="col-lg-8">
+            @if (zones is null)
+            {
+                <p><em>Loading...</em></p>
+            }
+            else if (zones.Count == 0)
+            {
+                <p>No zones found.</p>
+            }
+            else
+            {
+                <table class="table align-middle">
+                    <thead>
+                        <tr>
+                            <th>Code</th>
+                            <th>Name</th>
+                            <th>Purpose</th>
+                            <th>Status</th>
+                            <th>Description</th>
+                            <th class="text-end">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var zone in zones)
+                        {
+                            <tr>
+                                <td>@zone.Code</td>
+                                <td>@zone.Name</td>
+                                <td>@zone.Purpose</td>
+                                <td>
+                                    <span class="badge @(zone.IsActive ? "text-bg-success" : "text-bg-secondary")">
+                                        @(zone.IsActive ? "Active" : "Inactive")
+                                    </span>
+                                </td>
+                                <td>@zone.Description</td>
+                                <td class="text-end">
+                                    <button type="button" class="btn btn-outline-primary btn-sm me-2" @onclick="() => Edit(zone)">Edit</button>
+                                    @if (zone.IsActive)
+                                    {
+                                        <button type="button" class="btn btn-outline-warning btn-sm" @onclick="() => DeactivateAsync(zone.Id)">Deactivate</button>
+                                    }
+                                    else
+                                    {
+                                        <button type="button" class="btn btn-outline-success btn-sm" @onclick="() => ReactivateAsync(zone.Id)">Reactivate</button>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+        </div>
+    </div>
+</section>
+
+@code {
+    private static readonly string[] ZonePurposes =
+    [
+        "Storage",
+        "Receiving",
+        "Shipping",
+        "Picking",
+        "Packing",
+        "Staging",
+        "QualityControl",
+        "Quarantine",
+        "Other"
+    ];
+
+    private readonly string componentId = $"zones-{Guid.CreateVersion7():N}";
+    private List<ZoneResponse>? zones;
+    private ZoneForm form = new();
+    private Guid? editingId;
+    private Guid loadedWarehouseId;
+    private bool includeInactive;
+    private string? message;
+
+    [Parameter]
+    public Guid WarehouseId { get; set; }
+
+    [Parameter]
+    public string? WarehouseName { get; set; }
+
+    private string submitLabel => editingId is null ? "Create" : "Update";
+
+    private string includeInactiveId => $"{componentId}-include-inactive";
+
+    private string codeInputId => $"{componentId}-code";
+
+    private string nameInputId => $"{componentId}-name";
+
+    private string purposeInputId => $"{componentId}-purpose";
+
+    private string descriptionInputId => $"{componentId}-description";
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (WarehouseId == Guid.Empty || loadedWarehouseId == WarehouseId)
+        {
+            return;
+        }
+
+        loadedWarehouseId = WarehouseId;
+        ResetForm();
+        message = null;
+        await LoadAsync();
+    }
+
+    private async Task LoadAsync()
+    {
+        if (WarehouseId == Guid.Empty)
+        {
+            zones = [];
+            return;
+        }
+
+        zones = [.. await WarehouseApi.ListZonesAsync(WarehouseId, includeInactive)];
+    }
+
+    private async Task SaveAsync()
+    {
+        ApiClientResult<ZoneResponse> apiResult;
+
+        if (editingId is null)
+        {
+            apiResult = await WarehouseApi.CreateZoneAsync(
+                new(WarehouseId, form.Code, form.Name, form.Purpose, form.Description));
+            message = apiResult.IsSuccess ? "Zone created." : apiResult.ErrorMessage;
+        }
+        else
+        {
+            apiResult = await WarehouseApi.UpdateZoneAsync(
+                editingId.Value,
+                new(form.Code, form.Name, form.Purpose, form.Description));
+            message = apiResult.IsSuccess ? "Zone updated." : apiResult.ErrorMessage;
+        }
+
+        if (apiResult.IsSuccess)
+        {
+            ResetForm();
+            await LoadAsync();
+        }
+    }
+
+    private void Edit(ZoneResponse zone)
+    {
+        editingId = zone.Id;
+        form = new()
+        {
+            Code = zone.Code,
+            Name = zone.Name,
+            Purpose = zone.Purpose,
+            Description = zone.Description
+        };
+        message = null;
+    }
+
+    private async Task DeactivateAsync(Guid zoneId)
+    {
+        var apiResult = await WarehouseApi.DeactivateZoneAsync(zoneId);
+        message = apiResult.IsSuccess ? "Zone deactivated." : apiResult.ErrorMessage;
+        await LoadAsync();
+    }
+
+    private async Task ReactivateAsync(Guid zoneId)
+    {
+        var apiResult = await WarehouseApi.ReactivateZoneAsync(zoneId);
+        message = apiResult.IsSuccess ? "Zone reactivated." : apiResult.ErrorMessage;
+        await LoadAsync();
+    }
+
+    private void ResetForm()
+    {
+        editingId = null;
+        form = new();
+    }
+
+    private sealed class ZoneForm
+    {
+        public string? Code { get; set; }
+
+        public string? Name { get; set; }
+
+        public string? Purpose { get; set; } = "Storage";
+
+        public string? Description { get; set; }
+    }
+}
