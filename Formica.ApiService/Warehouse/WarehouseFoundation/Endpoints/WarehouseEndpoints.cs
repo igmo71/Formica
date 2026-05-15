@@ -41,11 +41,14 @@ public static class WarehouseEndpoints
     {
         var featureResult = await ListWarehouses.HandleAsync(dbContext, includeInactive == true, cancellationToken);
 
-        var response = featureResult.Value is null
-            ? Array.Empty<WarehouseResponse>()
-            : featureResult.Value
-                .Select(warehouse => WarehouseResponse.From(warehouse))
-                .ToArray();
+        if (!featureResult.IsSuccess || featureResult.Value is null)
+        {
+            throw new InvalidOperationException("Unexpected warehouse list feature result.");
+        }
+
+        var response = featureResult.Value
+            .Select(warehouse => WarehouseResponse.From(warehouse))
+            .ToArray();
 
         return TypedResults.Ok(response);
     }
