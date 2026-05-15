@@ -1,5 +1,7 @@
 using Formica.ApiService.Warehouse.Persistence;
+using Formica.ApiService.Warehouse.WarehouseFoundation.Features.Common;
 using Microsoft.EntityFrameworkCore;
+using WarehouseEntity = Formica.ApiService.Warehouse.WarehouseFoundation.Domain.Warehouses.Warehouse;
 
 namespace Formica.ApiService.Warehouse.WarehouseFoundation.Features.Warehouses;
 
@@ -7,7 +9,7 @@ public static class UpdateWarehouse
 {
     public sealed record Command(string? Code, string? Name, string? Description);
 
-    public static async Task<WarehouseFeatureResult> HandleAsync(
+    public static async Task<FeatureResult<WarehouseEntity>> HandleAsync(
         WarehouseDbContext dbContext,
         Guid warehouseId,
         Command command,
@@ -18,13 +20,16 @@ public static class UpdateWarehouse
 
         if (warehouse is null)
         {
-            return new(WarehouseFeatureStatus.NotFound);
+            return FeatureResult<WarehouseEntity>.NotFound(
+                "Warehouse.NotFound",
+                "Warehouse was not found.",
+                "warehouseId");
         }
 
         var validationResult = warehouse.TryUpdate(command.Code, command.Name, command.Description);
         if (!validationResult.IsValid)
         {
-            return new(WarehouseFeatureStatus.ValidationFailed, ValidationResult: validationResult);
+            return FeatureResult<WarehouseEntity>.ValidationFailed(validationResult.Errors);
         }
 
         var normalizedCode = warehouse.Code;
@@ -34,14 +39,14 @@ public static class UpdateWarehouse
 
         if (codeInUse)
         {
-            return new(
-                WarehouseFeatureStatus.Conflict,
-                ConflictMessage: $"Warehouse code '{normalizedCode}' is already used.",
-                ConflictCode: "Warehouse.CodeNotUnique");
+            return FeatureResult<WarehouseEntity>.Conflict(
+                "Warehouse.CodeNotUnique",
+                $"Warehouse code '{normalizedCode}' is already used.",
+                "code");
         }
 
         await dbContext.SaveChangesAsync(cancellationToken);
 
-        return new(WarehouseFeatureStatus.Success, warehouse);
+        return FeatureResult<WarehouseEntity>.Success(warehouse);
     }
 }

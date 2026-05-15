@@ -1,6 +1,8 @@
 using Formica.ApiService.Warehouse.Persistence;
 using Formica.ApiService.Warehouse.WarehouseFoundation.Contracts.Warehouses;
+using Formica.ApiService.Warehouse.WarehouseFoundation.Features.Common;
 using Formica.ApiService.Warehouse.WarehouseFoundation.Features.Warehouses;
+using WarehouseEntity = Formica.ApiService.Warehouse.WarehouseFoundation.Domain.Warehouses.Warehouse;
 
 namespace Formica.ApiService.Warehouse.WarehouseFoundation.Endpoints;
 
@@ -37,11 +39,13 @@ public static class WarehouseEndpoints
         bool? includeInactive,
         CancellationToken cancellationToken)
     {
-        var warehouses = await ListWarehouses.HandleAsync(dbContext, includeInactive == true, cancellationToken);
+        var featureResult = await ListWarehouses.HandleAsync(dbContext, includeInactive == true, cancellationToken);
 
-        var response = warehouses
-        .Select(warehouse => WarehouseResponse.From(warehouse))
-        .ToArray();
+        var response = featureResult.Value is null
+            ? Array.Empty<WarehouseResponse>()
+            : featureResult.Value
+                .Select(warehouse => WarehouseResponse.From(warehouse))
+                .ToArray();
 
         return TypedResults.Ok(response);
     }
@@ -51,11 +55,11 @@ public static class WarehouseEndpoints
         Guid warehouseId,
         CancellationToken cancellationToken)
     {
-        var warehouse = await GetWarehouse.HandleAsync(dbContext, warehouseId, cancellationToken);
+        var featureResult = await GetWarehouse.HandleAsync(dbContext, warehouseId, cancellationToken);
 
-        return warehouse is null
-            ? EndpointResults.NotFound()
-            : TypedResults.Ok(WarehouseResponse.From(warehouse));
+        return featureResult.Status == FeatureResultStatus.Success && featureResult.Value is not null
+            ? TypedResults.Ok(WarehouseResponse.From(featureResult.Value))
+            : EndpointResults.NotFound();
     }
 
     private static async Task<IResult> CreateAsync(
@@ -106,23 +110,23 @@ public static class WarehouseEndpoints
         return ToWriteResult(featureResult);
     }
 
-    private static IResult ToWriteResult(WarehouseFeatureResult featureResult, bool created = false)
+    private static IResult ToWriteResult(FeatureResult<WarehouseEntity> featureResult, bool created = false)
     {
         return featureResult.Status switch
         {
-            WarehouseFeatureStatus.Success when featureResult.Warehouse is not null && created
+            FeatureResultStatus.Success when featureResult.Value is not null && created
                 => TypedResults.Created(
-                    $"/api/warehouse-foundation/warehouses/{featureResult.Warehouse.Id}",
-                    WarehouseResponse.From(featureResult.Warehouse)),
-            WarehouseFeatureStatus.Success when featureResult.Warehouse is not null
-                => TypedResults.Ok(WarehouseResponse.From(featureResult.Warehouse)),
-            WarehouseFeatureStatus.ValidationFailed when featureResult.ValidationResult is not null
-                => EndpointResults.ValidationProblem(featureResult.ValidationResult),
-            WarehouseFeatureStatus.Conflict
+                    $"/api/warehouse-foundation/warehouses/{featureResult.Value.Id}",
+                    WarehouseResponse.From(featureResult.Value)),
+            FeatureResultStatus.Success when featureResult.Value is not null
+                => TypedResults.Ok(WarehouseResponse.From(featureResult.Value)),
+            FeatureResultStatus.ValidationFailed
+                => EndpointResults.ValidationProblem(featureResult.ErrorList),
+            FeatureResultStatus.Conflict
                 => EndpointResults.Conflict(
-                    featureResult.ConflictMessage ?? "Warehouse request conflicts with existing data.",
-                    featureResult.ConflictCode),
-            WarehouseFeatureStatus.NotFound => EndpointResults.NotFound(),
+                    featureResult.FirstError?.Message ?? "Warehouse request conflicts with existing data.",
+                    featureResult.FirstError?.Code),
+            FeatureResultStatus.NotFound => EndpointResults.NotFound(),
             _ => throw new InvalidOperationException("Unexpected warehouse feature result.")
         };
     }
