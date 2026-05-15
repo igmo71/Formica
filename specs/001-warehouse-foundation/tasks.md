@@ -107,12 +107,12 @@
 
 **Goal**: Introduce the Zone domain model and PostgreSQL persistence constraints without exposing Zone API/UI behavior yet.
 
-- [ ] T038A [P] [US2] Add Zone domain lifecycle tests in `Formica.Tests/Warehouse/WarehouseFoundation/Zones/ZoneLifecycleTests.cs`.
-- [ ] T039A [P] [US2] Add Zone uniqueness persistence tests in `Formica.Tests/Warehouse/WarehouseFoundation/Zones/ZonePersistenceTests.cs`.
-- [ ] T041A [US2] Create `Zone` domain model in `Formica.ApiService/Warehouse/WarehouseFoundation/Domain/Zones/Zone.cs`.
-- [ ] T042A [US2] Create Zone EF configuration in `Formica.ApiService/Warehouse/Persistence/Configurations/WarehouseFoundation/ZoneConfiguration.cs`.
-- [ ] T042B [US2] Add Zone `DbSet` and model configuration registration to `Formica.ApiService/Warehouse/Persistence/WarehouseDbContext.cs`.
-- [ ] T042C [US2] Create explicit EF Core migration for Zone persistence after the coherent Zone model and configuration exist.
+- [X] T038A [P] [US2] Add Zone domain lifecycle tests in `Formica.Tests/Warehouse/WarehouseFoundation/Zones/ZoneLifecycleTests.cs`.
+- [X] T039A [P] [US2] Add Zone uniqueness persistence tests in `Formica.Tests/Warehouse/WarehouseFoundation/Zones/ZonePersistenceTests.cs`.
+- [X] T041A [US2] Create `Zone` domain model in `Formica.ApiService/Warehouse/WarehouseFoundation/Domain/Zones/Zone.cs`.
+- [X] T042A [US2] Create Zone EF configuration in `Formica.ApiService/Warehouse/Persistence/Configurations/WarehouseFoundation/ZoneConfiguration.cs`.
+- [X] T042B [US2] Add Zone `DbSet` and model configuration registration to `Formica.ApiService/Warehouse/Persistence/WarehouseDbContext.cs`.
+- [X] T042C [US2] Create explicit EF Core migration for Zone persistence after the coherent Zone model and configuration exist.
 
 **Checkpoint**: Zone domain and persistence constraints exist, including `WarehouseId + Code` uniqueness and `Zone -> Warehouse` relationship. No Zone API or UI behavior is implemented yet.
 
