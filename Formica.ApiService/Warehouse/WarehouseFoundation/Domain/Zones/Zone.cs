@@ -1,53 +1,67 @@
 using Formica.ApiService.Warehouse.WarehouseFoundation.Domain.Common;
 using Formica.ApiService.Warehouse.WarehouseFoundation.Domain.Common.Validation;
 
-namespace Formica.ApiService.Warehouse.WarehouseFoundation.Domain.Warehouses;
+namespace Formica.ApiService.Warehouse.WarehouseFoundation.Domain.Zones;
 
-public sealed class Warehouse : EntityLifecycle
+public sealed class Zone : EntityLifecycle
 {
     public const int MaxCodeLength = 32;
     public const int MaxNameLength = 200;
     public const int MaxDescriptionLength = 1000;
 
-    private Warehouse(string code, string name, string? description)
+    private Zone(Guid warehouseId, string code, string name, ZonePurpose purpose, string? description)
     {
+        WarehouseId = warehouseId;
         Code = code;
         Name = name;
+        Purpose = purpose;
         Description = NormalizeOptionalText(description);
     }
 
-    private Warehouse()
+    private Zone()
     {
         Code = string.Empty;
         Name = string.Empty;
     }
 
+    public Guid WarehouseId { get; private set; }
+
     public string Code { get; private set; }
 
     public string Name { get; private set; }
 
+    public ZonePurpose Purpose { get; private set; }
+
     public string? Description { get; private set; }
 
     public static DomainValidationResult TryCreate(
+        Guid warehouseId,
         string? code,
         string? name,
+        ZonePurpose purpose,
         string? description,
-        out Warehouse? warehouse)
+        out Zone? zone)
     {
-        var validationResult = Validate(code, name, description);
+        var validationResult = Validate(warehouseId, code, name, purpose, description);
         if (!validationResult.IsValid)
         {
-            warehouse = null;
+            zone = null;
             return validationResult;
         }
 
-        warehouse = new Warehouse(NormalizeCode(code), NormalizeRequiredText(name), description);
+        zone = new Zone(
+            warehouseId,
+            NormalizeCode(code),
+            NormalizeRequiredText(name),
+            purpose,
+            description);
+
         return DomainValidationResult.Valid;
     }
 
-    public DomainValidationResult TryUpdate(string? code, string? name, string? description)
+    public DomainValidationResult TryUpdate(string? code, string? name, ZonePurpose purpose, string? description)
     {
-        var validationResult = Validate(code, name, description);
+        var validationResult = Validate(WarehouseId, code, name, purpose, description);
         if (!validationResult.IsValid)
         {
             return validationResult;
@@ -55,51 +69,73 @@ public sealed class Warehouse : EntityLifecycle
 
         Code = NormalizeCode(code);
         Name = NormalizeRequiredText(name);
+        Purpose = purpose;
         Description = NormalizeOptionalText(description);
         Touch();
 
         return DomainValidationResult.Valid;
     }
 
-    public static DomainValidationResult Validate(string? code, string? name, string? description)
+    public static DomainValidationResult Validate(
+        Guid warehouseId,
+        string? code,
+        string? name,
+        ZonePurpose purpose,
+        string? description)
     {
         var errors = new List<DomainValidationFailure>();
+
+        if (warehouseId == Guid.Empty)
+        {
+            errors.Add(new(
+                "Zone.WarehouseRequired",
+                "Zone warehouse is required.",
+                "warehouseId"));
+        }
 
         if (string.IsNullOrWhiteSpace(code))
         {
             errors.Add(new(
-                "Warehouse.CodeRequired",
-                "Warehouse code is required.",
+                "Zone.CodeRequired",
+                "Zone code is required.",
                 "code"));
         }
         else if (NormalizeCode(code).Length > MaxCodeLength)
         {
             errors.Add(new(
-                "Warehouse.CodeTooLong",
-                $"Warehouse code must not exceed {MaxCodeLength} characters.",
+                "Zone.CodeTooLong",
+                $"Zone code must not exceed {MaxCodeLength} characters.",
                 "code"));
         }
 
         if (string.IsNullOrWhiteSpace(name))
         {
             errors.Add(new(
-                "Warehouse.NameRequired",
-                "Warehouse name is required.",
+                "Zone.NameRequired",
+                "Zone name is required.",
                 "name"));
         }
         else if (NormalizeRequiredText(name).Length > MaxNameLength)
         {
             errors.Add(new(
-                "Warehouse.NameTooLong",
-                $"Warehouse name must not exceed {MaxNameLength} characters.",
+                "Zone.NameTooLong",
+                $"Zone name must not exceed {MaxNameLength} characters.",
                 "name"));
+        }
+
+        if (!Enum.IsDefined(purpose))
+        {
+            errors.Add(new(
+                "Zone.PurposeRequired",
+                "Zone purpose is required.",
+                "purpose"));
         }
 
         if (NormalizeOptionalText(description)?.Length > MaxDescriptionLength)
         {
             errors.Add(new(
-                "Warehouse.DescriptionTooLong",
-                $"Warehouse description must not exceed {MaxDescriptionLength} characters.",
+                "Zone.DescriptionTooLong",
+                $"Zone description must not exceed {MaxDescriptionLength} characters.",
                 "description"));
         }
 

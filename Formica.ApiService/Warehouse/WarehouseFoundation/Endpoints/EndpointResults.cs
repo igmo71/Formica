@@ -1,4 +1,4 @@
-using Formica.ApiService.Warehouse.WarehouseFoundation.Domain.Common.Validation;
+using Formica.ApiService.Warehouse.WarehouseFoundation.Features.Common;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 
@@ -8,9 +8,9 @@ public static class EndpointResults
 {
     private const string ConflictProblemType = "https://formica/problems/conflict";
 
-    public static ValidationProblem ValidationProblem(DomainValidationResult validationResult)
+    public static ValidationProblem ValidationProblem(IEnumerable<FeatureError> validationErrors)
     {
-        var errors = validationResult.Errors
+        var errors = validationErrors
             .GroupBy(error => error.Field ?? error.Code)
             .ToDictionary(
                 group => group.Key,

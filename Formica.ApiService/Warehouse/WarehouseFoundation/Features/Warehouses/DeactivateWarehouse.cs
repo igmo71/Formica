@@ -1,11 +1,13 @@
 using Formica.ApiService.Warehouse.Persistence;
+using Formica.ApiService.Warehouse.WarehouseFoundation.Features.Common;
 using Microsoft.EntityFrameworkCore;
+using WarehouseEntity = Formica.ApiService.Warehouse.WarehouseFoundation.Domain.Warehouses.Warehouse;
 
 namespace Formica.ApiService.Warehouse.WarehouseFoundation.Features.Warehouses;
 
 public static class DeactivateWarehouse
 {
-    public static async Task<WarehouseFeatureResult> HandleAsync(
+    public static async Task<FeatureResult<WarehouseEntity>> HandleAsync(
         WarehouseDbContext dbContext,
         Guid warehouseId,
         CancellationToken cancellationToken)
@@ -15,12 +17,15 @@ public static class DeactivateWarehouse
 
         if (warehouse is null)
         {
-            return new(WarehouseFeatureStatus.NotFound);
+            return FeatureResult<WarehouseEntity>.NotFound(
+                "Warehouse.NotFound",
+                "Warehouse was not found.",
+                "warehouseId");
         }
 
         warehouse.Deactivate();
         await dbContext.SaveChangesAsync(cancellationToken);
 
-        return new(WarehouseFeatureStatus.Success, warehouse);
+        return FeatureResult<WarehouseEntity>.Success(warehouse);
     }
 }

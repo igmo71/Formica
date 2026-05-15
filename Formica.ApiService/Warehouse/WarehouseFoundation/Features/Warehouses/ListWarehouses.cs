@@ -1,4 +1,5 @@
 using Formica.ApiService.Warehouse.Persistence;
+using Formica.ApiService.Warehouse.WarehouseFoundation.Features.Common;
 using Microsoft.EntityFrameworkCore;
 using WarehouseEntity = Formica.ApiService.Warehouse.WarehouseFoundation.Domain.Warehouses.Warehouse;
 
@@ -6,7 +7,7 @@ namespace Formica.ApiService.Warehouse.WarehouseFoundation.Features.Warehouses;
 
 public static class ListWarehouses
 {
-    public static Task<List<WarehouseEntity>> HandleAsync(
+    public static async Task<FeatureResult<IReadOnlyList<WarehouseEntity>>> HandleAsync(
         WarehouseDbContext dbContext,
         bool includeInactive,
         CancellationToken cancellationToken)
@@ -18,8 +19,10 @@ public static class ListWarehouses
             query = query.Where(warehouse => warehouse.IsActive);
         }
 
-        return query
+        var warehouses = await query
             .OrderBy(warehouse => warehouse.Code)
             .ToListAsync(cancellationToken);
+
+        return FeatureResult<IReadOnlyList<WarehouseEntity>>.Success(warehouses);
     }
 }

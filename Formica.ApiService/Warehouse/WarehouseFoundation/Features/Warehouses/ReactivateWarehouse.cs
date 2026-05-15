@@ -1,11 +1,13 @@
 using Formica.ApiService.Warehouse.Persistence;
+using Formica.ApiService.Warehouse.WarehouseFoundation.Features.Common;
 using Microsoft.EntityFrameworkCore;
+using WarehouseEntity = Formica.ApiService.Warehouse.WarehouseFoundation.Domain.Warehouses.Warehouse;
 
 namespace Formica.ApiService.Warehouse.WarehouseFoundation.Features.Warehouses;
 
 public static class ReactivateWarehouse
 {
-    public static async Task<WarehouseFeatureResult> HandleAsync(
+    public static async Task<FeatureResult<WarehouseEntity>> HandleAsync(
         WarehouseDbContext dbContext,
         Guid warehouseId,
         CancellationToken cancellationToken)
@@ -15,7 +17,10 @@ public static class ReactivateWarehouse
 
         if (warehouse is null)
         {
-            return new(WarehouseFeatureStatus.NotFound);
+            return FeatureResult<WarehouseEntity>.NotFound(
+                "Warehouse.NotFound",
+                "Warehouse was not found.",
+                "warehouseId");
         }
 
         var codeInUse = await dbContext.Warehouses.AnyAsync(
@@ -24,15 +29,15 @@ public static class ReactivateWarehouse
 
         if (codeInUse)
         {
-            return new(
-                WarehouseFeatureStatus.Conflict,
-                ConflictMessage: $"Warehouse code '{warehouse.Code}' is already used.",
-                ConflictCode: "Warehouse.CodeNotUnique");
+            return FeatureResult<WarehouseEntity>.Conflict(
+                "Warehouse.CodeNotUnique",
+                $"Warehouse code '{warehouse.Code}' is already used.",
+                "code");
         }
 
         warehouse.Reactivate();
         await dbContext.SaveChangesAsync(cancellationToken);
 
-        return new(WarehouseFeatureStatus.Success, warehouse);
+        return FeatureResult<WarehouseEntity>.Success(warehouse);
     }
 }
