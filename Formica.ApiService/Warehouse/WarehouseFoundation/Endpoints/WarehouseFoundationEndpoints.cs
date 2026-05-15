@@ -12,6 +12,7 @@ public static class WarehouseFoundationEndpoints
             .WithName("GetWarehouseFoundationStatus");
 
         group.MapWarehouseEndpoints();
+        group.MapZoneEndpoints();
         group.MapLocationAddressRulesEndpoints();
 
         return endpoints;

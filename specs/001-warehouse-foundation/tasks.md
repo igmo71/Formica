@@ -120,11 +120,11 @@
 
 **Goal**: Expose create/list/get behavior for Zones through contracts, features, endpoints, and API tests.
 
-- [ ] T038B [P] [US2] Add Zone create/list/get API contract tests in `Formica.Tests/Warehouse/WarehouseFoundation/Zones/ZoneApiTests.cs`.
-- [ ] T043B [US2] Create Zone request/response DTOs in `Formica.ApiService/Warehouse/WarehouseFoundation/Contracts/Zones/`.
-- [ ] T044B [US2] Implement create zone feature in `Formica.ApiService/Warehouse/WarehouseFoundation/Features/Zones/CreateZone.cs`.
-- [ ] T045B [US2] Implement list/get zone features in `Formica.ApiService/Warehouse/WarehouseFoundation/Features/Zones/`.
-- [ ] T048B [US2] Implement create/list/get zone endpoints in `Formica.ApiService/Warehouse/WarehouseFoundation/Endpoints/ZoneEndpoints.cs`.
+- [X] T038B [P] [US2] Add Zone create/list/get API contract tests in `Formica.Tests/Warehouse/WarehouseFoundation/Zones/ZoneApiTests.cs`.
+- [X] T043B [US2] Create Zone request/response DTOs in `Formica.ApiService/Warehouse/WarehouseFoundation/Contracts/Zones/`.
+- [X] T044B [US2] Implement create zone feature in `Formica.ApiService/Warehouse/WarehouseFoundation/Features/Zones/CreateZone.cs`.
+- [X] T045B [US2] Implement list/get zone features in `Formica.ApiService/Warehouse/WarehouseFoundation/Features/Zones/`.
+- [X] T048B [US2] Implement create/list/get zone endpoints in `Formica.ApiService/Warehouse/WarehouseFoundation/Endpoints/ZoneEndpoints.cs`.
 
 **Checkpoint**: Zone create/list/get works through API. Duplicate zone code in the same warehouse is rejected. Same zone code in another warehouse is allowed.
 
