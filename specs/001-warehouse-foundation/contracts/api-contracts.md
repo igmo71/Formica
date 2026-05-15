@@ -250,8 +250,9 @@ GET /api/warehouse-foundation/zones?warehouseId={warehouseId}&includeInactive=fa
 
 Default behavior:
 
-- returns active zones only;
-- `warehouseId` should be provided when the UI is working inside a selected warehouse.
+- `warehouseId` is required in this milestone;
+- returns active zones for the selected Warehouse only;
+- `includeInactive=true` returns active and inactive zones for the selected Warehouse.
 
 Response:
 
@@ -329,11 +330,22 @@ Behavior:
 POST /api/warehouse-foundation/zones/{zoneId}/deactivate
 ```
 
+Behavior:
+
+- marks the Zone inactive;
+- preserves stable identity and Warehouse assignment;
+- does not physically delete the Zone.
+
 ### Reactivate Zone
 
 ```http
 POST /api/warehouse-foundation/zones/{zoneId}/reactivate
 ```
+
+Behavior:
+
+- marks the Zone active if uniqueness and validation rules still pass;
+- preserves stable identity and Warehouse assignment.
 
 ## Storage Locations
 
