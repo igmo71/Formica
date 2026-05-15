@@ -22,6 +22,15 @@ public static class ZoneEndpoints
         zones.MapPost("", CreateAsync)
             .WithName("CreateZone");
 
+        zones.MapPut("/{zoneId:guid}", UpdateAsync)
+            .WithName("UpdateZone");
+
+        zones.MapPost("/{zoneId:guid}/deactivate", DeactivateAsync)
+            .WithName("DeactivateZone");
+
+        zones.MapPost("/{zoneId:guid}/reactivate", ReactivateAsync)
+            .WithName("ReactivateZone");
+
         return group;
     }
 
@@ -79,6 +88,41 @@ public static class ZoneEndpoints
             cancellationToken);
 
         return ToWriteResult(featureResult, created: true);
+    }
+
+    private static async Task<IResult> UpdateAsync(
+        WarehouseDbContext dbContext,
+        Guid zoneId,
+        UpdateZoneRequest request,
+        CancellationToken cancellationToken)
+    {
+        var featureResult = await UpdateZone.HandleAsync(
+            dbContext,
+            zoneId,
+            new(request.Code, request.Name, request.Purpose, request.Description),
+            cancellationToken);
+
+        return ToWriteResult(featureResult);
+    }
+
+    private static async Task<IResult> DeactivateAsync(
+        WarehouseDbContext dbContext,
+        Guid zoneId,
+        CancellationToken cancellationToken)
+    {
+        var featureResult = await DeactivateZone.HandleAsync(dbContext, zoneId, cancellationToken);
+
+        return ToWriteResult(featureResult);
+    }
+
+    private static async Task<IResult> ReactivateAsync(
+        WarehouseDbContext dbContext,
+        Guid zoneId,
+        CancellationToken cancellationToken)
+    {
+        var featureResult = await ReactivateZone.HandleAsync(dbContext, zoneId, cancellationToken);
+
+        return ToWriteResult(featureResult);
     }
 
     private static IResult ToWriteResult(FeatureResult<Zone> featureResult, bool created = false)

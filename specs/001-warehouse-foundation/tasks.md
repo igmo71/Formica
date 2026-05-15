@@ -132,10 +132,10 @@
 
 **Goal**: Add update/deactivate/reactivate behavior for Zones while preserving stable identity and scoped uniqueness semantics.
 
-- [ ] T038C [P] [US2] Add Zone update/deactivate/reactivate API tests in `Formica.Tests/Warehouse/WarehouseFoundation/Zones/ZoneLifecycleApiTests.cs`.
-- [ ] T046C [US2] Implement update zone feature in `Formica.ApiService/Warehouse/WarehouseFoundation/Features/Zones/UpdateZone.cs`.
-- [ ] T047C [US2] Implement deactivate/reactivate zone features in `Formica.ApiService/Warehouse/WarehouseFoundation/Features/Zones/`.
-- [ ] T048C [US2] Add update/deactivate/reactivate routes to `Formica.ApiService/Warehouse/WarehouseFoundation/Endpoints/ZoneEndpoints.cs`.
+- [X] T038C [P] [US2] Add Zone update/deactivate/reactivate API tests in `Formica.Tests/Warehouse/WarehouseFoundation/Zones/ZoneLifecycleApiTests.cs`.
+- [X] T046C [US2] Implement update zone feature in `Formica.ApiService/Warehouse/WarehouseFoundation/Features/Zones/UpdateZone.cs`.
+- [X] T047C [US2] Implement deactivate/reactivate zone features in `Formica.ApiService/Warehouse/WarehouseFoundation/Features/Zones/`.
+- [X] T048C [US2] Add update/deactivate/reactivate routes to `Formica.ApiService/Warehouse/WarehouseFoundation/Endpoints/ZoneEndpoints.cs`.
 
 **Checkpoint**: Zone update/deactivate/reactivate works through API. Update preserves identity and does not move Zone to another Warehouse. Reactivation reruns uniqueness and validation checks.
 
