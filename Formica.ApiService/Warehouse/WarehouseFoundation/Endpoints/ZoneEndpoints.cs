@@ -37,14 +37,23 @@ public static class ZoneEndpoints
             includeInactive == true,
             cancellationToken);
 
-        return featureResult.Status switch
+        if (featureResult.Status == FeatureResultStatus.ValidationFailed)
         {
-            FeatureResultStatus.Success when featureResult.Value is not null
-                => TypedResults.Ok(featureResult.Value.Select(ZoneResponse.From).ToArray()),
-            FeatureResultStatus.ValidationFailed
-                => EndpointResults.ValidationProblem(featureResult.ErrorList),
-            _ => throw new InvalidOperationException("Unexpected zone list feature result.")
-        };
+            return EndpointResults.ValidationProblem(featureResult.ErrorList);
+        }
+
+        if (!featureResult.IsSuccess || featureResult.Value is null)
+        {
+            return TypedResults.Problem(
+                title: "Unexpected zone list result.",
+                statusCode: StatusCodes.Status500InternalServerError);
+        }
+
+        var response = featureResult.Value
+            .Select(zone => ZoneResponse.From(zone))
+            .ToArray();
+
+        return TypedResults.Ok(response);
     }
 
     private static async Task<IResult> GetAsync(
