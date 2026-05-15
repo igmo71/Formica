@@ -1,4 +1,5 @@
 using Formica.ApiService.Warehouse.WarehouseFoundation.Domain.LocationAddressing;
+using Formica.ApiService.Warehouse.WarehouseFoundation.Domain.Zones;
 using Microsoft.EntityFrameworkCore;
 using WarehouseEntity = Formica.ApiService.Warehouse.WarehouseFoundation.Domain.Warehouses.Warehouse;
 
@@ -7,6 +8,8 @@ namespace Formica.ApiService.Warehouse.Persistence;
 public sealed class WarehouseDbContext(DbContextOptions<WarehouseDbContext> options) : DbContext(options)
 {
     public DbSet<WarehouseEntity> Warehouses => Set<WarehouseEntity>();
+
+    public DbSet<Zone> Zones => Set<Zone>();
 
     public DbSet<LocationAddressRules> LocationAddressRules => Set<LocationAddressRules>();
 
