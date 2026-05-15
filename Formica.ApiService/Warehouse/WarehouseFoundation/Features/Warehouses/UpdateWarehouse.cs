@@ -22,31 +22,29 @@ public static class UpdateWarehouse
             return new(WarehouseFeatureStatus.NotFound);
         }
 
-        var validationResult = WarehouseEntity.Validate(command.Code, command.Name, command.Description);
+        var validationResult = WarehouseEntity.TryPrepareUpdate(
+            command.Code,
+            command.Name,
+            command.Description,
+            out var update);
         if (!validationResult.IsValid)
         {
             return new(WarehouseFeatureStatus.ValidationFailed, ValidationResult: validationResult);
         }
 
-        var normalizedCode = WarehouseEntity.NormalizeCode(command.Code);
         var codeInUse = await dbContext.Warehouses.AnyAsync(
-            existing => existing.Id != warehouseId && existing.Code == normalizedCode,
+            existing => existing.Id != warehouseId && existing.Code == update!.Code,
             cancellationToken);
 
         if (codeInUse)
         {
             return new(
                 WarehouseFeatureStatus.Conflict,
-                ConflictMessage: $"Warehouse code '{normalizedCode}' is already used.",
+                ConflictMessage: $"Warehouse code '{update!.Code}' is already used.",
                 ConflictCode: "Warehouse.CodeNotUnique");
         }
 
-        var updateResult = warehouse.TryUpdate(command.Code, command.Name, command.Description);
-        if (!updateResult.IsValid)
-        {
-            return new(WarehouseFeatureStatus.ValidationFailed, ValidationResult: updateResult);
-        }
-
+        warehouse.Apply(update!);
         await dbContext.SaveChangesAsync(cancellationToken);
 
         return new(WarehouseFeatureStatus.Success, warehouse);
