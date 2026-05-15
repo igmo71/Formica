@@ -41,6 +41,8 @@ Rules:
 
 `Features/Common/` must not become a generic shared-kernel folder. Reusable domain concepts, lifecycle primitives, domain validation results, and address normalization rules belong under `Domain/`.
 
+Accepted `Features/Common/` contents are limited to local Warehouse Foundation feature/application coordination types, such as the accepted feature result pattern described below.
+
 ## Domain Model Style
 
 Warehouse Foundation uses self-contained rich domain models without excessive ceremony.
@@ -113,6 +115,74 @@ public sealed record DomainValidationResult(
 
 Use `DomainValidationResult` for expected domain validation failures, such as invalid address format, negative capacity, invalid code, or too-long text. Use exceptions only for programming errors or impossible states, not as the default user-input validation mechanism.
 
+## Domain Create/Update Validation Pattern
+
+Domain models that accept untrusted user input SHOULD expose validation-returning methods for both create and update operations.
+
+Preferred pattern:
+
+- `TryCreate(...)` for creation;
+- `TryUpdate(...)` for mutation of editable attributes.
+
+`TryCreate(...)` prevents invalid object creation.
+
+`TryUpdate(...)` validates local invariants before mutating state and MUST NOT mutate state when validation fails.
+
+Domain models handle local invariants and normalization, including required values, maximum lengths, controlled value validation, and lifecycle mechanics.
+
+Feature/application code handles persistence-dependent checks, including not found, database uniqueness, relationship existence, conflict detection, transaction boundaries, and HTTP/API translation.
+
+Do not split expected local domain validation into feature/application code merely to avoid calling a domain method. The feature/application layer may call domain methods such as `TryCreate(...)` and `TryUpdate(...)`, then perform persistence-dependent checks.
+
+## Feature/Application Result Pattern
+
+Warehouse Foundation uses a small local feature/application result pattern for use-case results:
+
+- `FeatureResult<T>`;
+- `FeatureResultStatus`;
+- `FeatureError`.
+
+Placement:
+
+```text
+Formica.ApiService/Warehouse/WarehouseFoundation/Features/Common/
+  FeatureResult.cs
+  FeatureResultStatus.cs
+  FeatureError.cs
+```
+
+This is not a generic application-wide Result framework, not a CQRS framework, not a dispatcher abstraction, and not a MediatR replacement. It is a local Warehouse Foundation feature result contract used by feature handlers and endpoint mapping.
+
+Feature handlers SHOULD return `FeatureResult<T>` when they need to report:
+
+- success with a value;
+- validation failure;
+- not found;
+- conflict.
+
+Feature handlers MUST NOT introduce duplicated per-entity result/status types such as:
+
+- `WarehouseFeatureResult`;
+- `WarehouseFeatureStatus`;
+- `ZoneFeatureResult`;
+- `ZoneFeatureStatus`;
+- similar entity-specific result/status duplicates.
+
+`FeatureError` represents feature/application errors with a stable `Code`, human-readable `Message`, and optional `Field`.
+
+Domain validation failures MAY be converted into `FeatureError` at the feature/application layer. Domain must keep using `DomainValidationResult` and `DomainValidationFailure`; it must not depend on feature result types.
+
+Endpoints translate `FeatureResult<T>` into HTTP/TypedResults. Feature handlers must not return ASP.NET Core result types directly.
+
+Expected feature result statuses:
+
+```text
+Success
+ValidationFailed
+NotFound
+Conflict
+```
+
 ## Identity Generation and EF Core
 
 Persisted Warehouse Foundation entities should use application/domain-generated GUID v7 identities.
@@ -173,6 +243,18 @@ Actual migration creation is allowed only after an explicit instruction and only
 Runtime connection strings should come from Aspire resource references where possible. `appsettings.json` does not need to contain local development connection strings when Aspire supplies them through configuration/environment.
 
 Design-time EF Core infrastructure must not hardcode a local PostgreSQL username/password as the only path. Prefer environment/configuration-based lookup and fail clearly when design-time connection information is not configured.
+
+## Agent Validation Command Policy
+
+Implementation agents may run:
+
+```text
+dotnet build .\Formica.slnx -m:1
+```
+
+Implementation agents SHOULD NOT run long full test suites by default. Full test runs are performed manually by the user unless a prompt explicitly allows the agent to run tests.
+
+If an implementation prompt explicitly allows tests, the prompt must define the exact command and expected scope.
 
 ## Review Branch Workflow
 
