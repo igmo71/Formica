@@ -283,6 +283,18 @@ For this milestone, Location Address Rules are a foundation-level policy, not a 
 
 Location Address Rules are not an address generator. Generated ranges, topology-aware address creation, and warehouse-specific overrides are deferred.
 
+### Future Default Policy with Scoped Override
+
+Warehouse Foundation currently models Location Address Rules as a foundation-level default policy, not as a Warehouse-owned child entity.
+
+Future warehouse-specific Location Address Rules may follow a **Default Policy with Scoped Override** model: a foundation-level default rule applies to all warehouses unless a warehouse-specific override exists. Warehouse-specific overrides are intentionally deferred and must be introduced by a separate feature/specification.
+
+For the current milestone:
+
+- Location Address Rules do not have `WarehouseId`;
+- Warehouse-specific address rule overrides are not implemented;
+- Storage Location address validation uses the foundation-level default policy.
+
 ## Storage Location Capacity
 
 ### Meaning
