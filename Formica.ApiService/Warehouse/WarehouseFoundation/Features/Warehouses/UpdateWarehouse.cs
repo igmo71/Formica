@@ -1,6 +1,5 @@
 using Formica.ApiService.Warehouse.Persistence;
 using Microsoft.EntityFrameworkCore;
-using WarehouseEntity = Formica.ApiService.Warehouse.WarehouseFoundation.Domain.Warehouses.Warehouse;
 
 namespace Formica.ApiService.Warehouse.WarehouseFoundation.Features.Warehouses;
 
@@ -22,13 +21,13 @@ public static class UpdateWarehouse
             return new(WarehouseFeatureStatus.NotFound);
         }
 
-        var validationResult = WarehouseEntity.Validate(command.Code, command.Name, command.Description);
+        var validationResult = warehouse.TryUpdate(command.Code, command.Name, command.Description);
         if (!validationResult.IsValid)
         {
             return new(WarehouseFeatureStatus.ValidationFailed, ValidationResult: validationResult);
         }
 
-        var normalizedCode = WarehouseEntity.NormalizeCode(command.Code);
+        var normalizedCode = warehouse.Code;
         var codeInUse = await dbContext.Warehouses.AnyAsync(
             existing => existing.Id != warehouseId && existing.Code == normalizedCode,
             cancellationToken);
@@ -41,7 +40,6 @@ public static class UpdateWarehouse
                 ConflictCode: "Warehouse.CodeNotUnique");
         }
 
-        warehouse.Update(command.Code, command.Name, command.Description);
         await dbContext.SaveChangesAsync(cancellationToken);
 
         return new(WarehouseFeatureStatus.Success, warehouse);

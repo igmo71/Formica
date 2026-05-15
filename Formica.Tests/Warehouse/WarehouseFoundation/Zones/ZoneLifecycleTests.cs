@@ -70,8 +70,9 @@ public sealed class ZoneLifecycleTests
         var id = zone.Id;
         var createdAtUtc = zone.CreatedAtUtc;
 
-        zone.Update(" picking ", " Picking Area ", ZonePurpose.Picking, " Fast pick ");
+        var validationResult = zone.TryUpdate(" picking ", " Picking Area ", ZonePurpose.Picking, " Fast pick ");
 
+        Assert.True(validationResult.IsValid);
         Assert.Equal(id, zone.Id);
         Assert.Equal(warehouseId, zone.WarehouseId);
         Assert.Equal(createdAtUtc, zone.CreatedAtUtc);
@@ -80,6 +81,36 @@ public sealed class ZoneLifecycleTests
         Assert.Equal(ZonePurpose.Picking, zone.Purpose);
         Assert.Equal("Fast pick", zone.Description);
         Assert.True(zone.UpdatedAtUtc >= createdAtUtc);
+    }
+
+    [Theory]
+    [InlineData(" ", "Main Storage", "Zone.CodeRequired")]
+    [InlineData("STORAGE", " ", "Zone.NameRequired")]
+    public void UpdateWithInvalidCodeOrNameReturnsValidationFailureAndDoesNotMutate(
+        string code,
+        string name,
+        string expectedErrorCode)
+    {
+        var warehouseId = Guid.CreateVersion7();
+        var zone = CreateZone(warehouseId);
+        var id = zone.Id;
+        var originalCode = zone.Code;
+        var originalName = zone.Name;
+        var originalPurpose = zone.Purpose;
+        var originalDescription = zone.Description;
+        var originalUpdatedAtUtc = zone.UpdatedAtUtc;
+
+        var validationResult = zone.TryUpdate(code, name, ZonePurpose.Picking, "Changed description");
+
+        Assert.False(validationResult.IsValid);
+        Assert.Contains(validationResult.Errors, error => error.Code == expectedErrorCode);
+        Assert.Equal(id, zone.Id);
+        Assert.Equal(warehouseId, zone.WarehouseId);
+        Assert.Equal(originalCode, zone.Code);
+        Assert.Equal(originalName, zone.Name);
+        Assert.Equal(originalPurpose, zone.Purpose);
+        Assert.Equal(originalDescription, zone.Description);
+        Assert.Equal(originalUpdatedAtUtc, zone.UpdatedAtUtc);
     }
 
     [Fact]

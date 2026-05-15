@@ -45,12 +45,20 @@ public sealed class Warehouse : EntityLifecycle
         return DomainValidationResult.Valid;
     }
 
-    public void Update(string? code, string? name, string? description)
+    public DomainValidationResult TryUpdate(string? code, string? name, string? description)
     {
+        var validationResult = Validate(code, name, description);
+        if (!validationResult.IsValid)
+        {
+            return validationResult;
+        }
+
         Code = NormalizeCode(code);
         Name = NormalizeRequiredText(name);
         Description = NormalizeOptionalText(description);
         Touch();
+
+        return DomainValidationResult.Valid;
     }
 
     public static DomainValidationResult Validate(string? code, string? name, string? description)

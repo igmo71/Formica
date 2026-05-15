@@ -59,13 +59,21 @@ public sealed class Zone : EntityLifecycle
         return DomainValidationResult.Valid;
     }
 
-    public void Update(string? code, string? name, ZonePurpose purpose, string? description)
+    public DomainValidationResult TryUpdate(string? code, string? name, ZonePurpose purpose, string? description)
     {
+        var validationResult = Validate(WarehouseId, code, name, purpose, description);
+        if (!validationResult.IsValid)
+        {
+            return validationResult;
+        }
+
         Code = NormalizeCode(code);
         Name = NormalizeRequiredText(name);
         Purpose = purpose;
         Description = NormalizeOptionalText(description);
         Touch();
+
+        return DomainValidationResult.Valid;
     }
 
     public static DomainValidationResult Validate(
