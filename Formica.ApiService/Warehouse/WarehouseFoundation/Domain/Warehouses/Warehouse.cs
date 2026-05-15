@@ -45,20 +45,48 @@ public sealed class Warehouse : EntityLifecycle
         return DomainValidationResult.Valid;
     }
 
-    public DomainValidationResult TryUpdate(string? code, string? name, string? description)
+    public static DomainValidationResult TryPrepareUpdate(
+        string? code,
+        string? name,
+        string? description,
+        out PreparedUpdate? update)
     {
         var validationResult = Validate(code, name, description);
+        if (!validationResult.IsValid)
+        {
+            update = null;
+            return validationResult;
+        }
+
+        update = new PreparedUpdate(
+            NormalizeCode(code),
+            NormalizeRequiredText(name),
+            NormalizeOptionalText(description));
+
+        return DomainValidationResult.Valid;
+    }
+
+    public DomainValidationResult TryUpdate(string? code, string? name, string? description)
+    {
+        var validationResult = TryPrepareUpdate(code, name, description, out var update);
         if (!validationResult.IsValid)
         {
             return validationResult;
         }
 
-        Code = NormalizeCode(code);
-        Name = NormalizeRequiredText(name);
-        Description = NormalizeOptionalText(description);
-        Touch();
+        Apply(update!);
 
         return DomainValidationResult.Valid;
+    }
+
+    public void Apply(PreparedUpdate update)
+    {
+        ArgumentNullException.ThrowIfNull(update);
+
+        Code = update.Code;
+        Name = update.Name;
+        Description = update.Description;
+        Touch();
     }
 
     public static DomainValidationResult Validate(string? code, string? name, string? description)
@@ -119,5 +147,21 @@ public sealed class Warehouse : EntityLifecycle
         var normalized = value?.Trim();
 
         return string.IsNullOrEmpty(normalized) ? null : normalized;
+    }
+
+    public sealed class PreparedUpdate
+    {
+        private internal PreparedUpdate(string code, string name, string? description)
+        {
+            Code = code;
+            Name = name;
+            Description = description;
+        }
+
+        public string Code { get; }
+
+        public string Name { get; }
+
+        public string? Description { get; }
     }
 }
