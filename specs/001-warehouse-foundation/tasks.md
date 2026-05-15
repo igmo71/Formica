@@ -101,26 +101,64 @@
 
 **Independent Test**: Create two zones in a warehouse, reject duplicate zone code in the same warehouse, allow same zone code in another warehouse, update/deactivate/reactivate zone.
 
-### Tests for User Story 2
+**Review Strategy**: Phase 4 MUST be implemented in small reviewable increments. Do not implement the full Zone user story in one Codex pass.
 
-- [ ] T038 [P] [US2] Add zone API contract tests in `Formica.Tests/Warehouse/WarehouseFoundation/Zones/ZoneApiTests.cs`.
-- [ ] T039 [P] [US2] Add zone uniqueness persistence tests in `Formica.Tests/Warehouse/WarehouseFoundation/Zones/ZonePersistenceTests.cs`.
-- [ ] T040 [P] [US2] Add zone lifecycle tests in `Formica.Tests/Warehouse/WarehouseFoundation/Zones/ZoneLifecycleTests.cs`.
+### Phase 4A: Zone domain and persistence
 
-### Implementation for User Story 2
+**Goal**: Introduce the Zone domain model and PostgreSQL persistence constraints without exposing Zone API/UI behavior yet.
 
-- [ ] T041 [US2] Create `Zone` domain model in `Formica.ApiService/Warehouse/WarehouseFoundation/Domain/Zones/Zone.cs`.
-- [ ] T042 [US2] Create Zone EF configuration in `Formica.ApiService/Warehouse/Persistence/Configurations/WarehouseFoundation/ZoneConfiguration.cs`.
-- [ ] T043 [US2] Create zone request/response DTOs in `Formica.ApiService/Warehouse/WarehouseFoundation/Contracts/Zones/`.
-- [ ] T044 [US2] Implement create zone feature in `Formica.ApiService/Warehouse/WarehouseFoundation/Features/Zones/CreateZone.cs`.
-- [ ] T045 [US2] Implement list/get zone features in `Formica.ApiService/Warehouse/WarehouseFoundation/Features/Zones/`.
-- [ ] T046 [US2] Implement update zone feature in `Formica.ApiService/Warehouse/WarehouseFoundation/Features/Zones/UpdateZone.cs`.
-- [ ] T047 [US2] Implement deactivate/reactivate zone features in `Formica.ApiService/Warehouse/WarehouseFoundation/Features/Zones/`.
-- [ ] T048 [US2] Implement zone endpoints in `Formica.ApiService/Warehouse/WarehouseFoundation/Endpoints/ZoneEndpoints.cs`.
-- [ ] T049 [US2] Add Zone API client methods in `Formica.Web/Warehouse/WarehouseFoundation/ApiClients/WarehouseFoundationApiClient.cs`.
-- [ ] T050 [US2] Add Zone management component in `Formica.Web/Warehouse/WarehouseFoundation/Components/ZonesPanel.razor`.
+- [ ] T038A [P] [US2] Add Zone domain lifecycle tests in `Formica.Tests/Warehouse/WarehouseFoundation/Zones/ZoneLifecycleTests.cs`.
+- [ ] T039A [P] [US2] Add Zone uniqueness persistence tests in `Formica.Tests/Warehouse/WarehouseFoundation/Zones/ZonePersistenceTests.cs`.
+- [ ] T041A [US2] Create `Zone` domain model in `Formica.ApiService/Warehouse/WarehouseFoundation/Domain/Zones/Zone.cs`.
+- [ ] T042A [US2] Create Zone EF configuration in `Formica.ApiService/Warehouse/Persistence/Configurations/WarehouseFoundation/ZoneConfiguration.cs`.
+- [ ] T042B [US2] Add Zone `DbSet` and model configuration registration to `Formica.ApiService/Warehouse/Persistence/WarehouseDbContext.cs`.
+- [ ] T042C [US2] Create explicit EF Core migration for Zone persistence after the coherent Zone model and configuration exist.
 
-**Checkpoint**: US1 and US2 work independently and together.
+**Checkpoint**: Zone domain and persistence constraints exist, including `WarehouseId + Code` uniqueness and `Zone -> Warehouse` relationship. No Zone API or UI behavior is implemented yet.
+
+### Phase 4B: Zone create/list/get API
+
+**Goal**: Expose create/list/get behavior for Zones through contracts, features, endpoints, and API tests.
+
+- [ ] T038B [P] [US2] Add Zone create/list/get API contract tests in `Formica.Tests/Warehouse/WarehouseFoundation/Zones/ZoneApiTests.cs`.
+- [ ] T043B [US2] Create Zone request/response DTOs in `Formica.ApiService/Warehouse/WarehouseFoundation/Contracts/Zones/`.
+- [ ] T044B [US2] Implement create zone feature in `Formica.ApiService/Warehouse/WarehouseFoundation/Features/Zones/CreateZone.cs`.
+- [ ] T045B [US2] Implement list/get zone features in `Formica.ApiService/Warehouse/WarehouseFoundation/Features/Zones/`.
+- [ ] T048B [US2] Implement create/list/get zone endpoints in `Formica.ApiService/Warehouse/WarehouseFoundation/Endpoints/ZoneEndpoints.cs`.
+
+**Checkpoint**: Zone create/list/get works through API. Duplicate zone code in the same warehouse is rejected. Same zone code in another warehouse is allowed.
+
+### Phase 4C: Zone update and lifecycle API
+
+**Goal**: Add update/deactivate/reactivate behavior for Zones while preserving stable identity and scoped uniqueness semantics.
+
+- [ ] T038C [P] [US2] Add Zone update/deactivate/reactivate API tests in `Formica.Tests/Warehouse/WarehouseFoundation/Zones/ZoneLifecycleApiTests.cs`.
+- [ ] T046C [US2] Implement update zone feature in `Formica.ApiService/Warehouse/WarehouseFoundation/Features/Zones/UpdateZone.cs`.
+- [ ] T047C [US2] Implement deactivate/reactivate zone features in `Formica.ApiService/Warehouse/WarehouseFoundation/Features/Zones/`.
+- [ ] T048C [US2] Add update/deactivate/reactivate routes to `Formica.ApiService/Warehouse/WarehouseFoundation/Endpoints/ZoneEndpoints.cs`.
+
+**Checkpoint**: Zone update/deactivate/reactivate works through API. Update preserves identity and does not move Zone to another Warehouse. Reactivation reruns uniqueness and validation checks.
+
+### Phase 4D: Zone UI/client
+
+**Goal**: Add Zone client methods and a Bootstrap-based Zone management component without moving business rules into the UI.
+
+- [ ] T049D [US2] Add Zone API client methods in `Formica.Web/Warehouse/WarehouseFoundation/ApiClients/WarehouseFoundationApiClient.cs`.
+- [ ] T050D [US2] Add Zone management component in `Formica.Web/Warehouse/WarehouseFoundation/Components/ZonesPanel.razor`.
+
+**Checkpoint**: A user can manage zones for a selected warehouse through the initial Blazor/Bootstrap UI. UI shows active/inactive state and delegates business validation to API/domain/application behavior.
+
+### Phase 4E: US2 consistency pass
+
+**Goal**: Validate that US2 is coherent across specs, API behavior, persistence, UI, and tests.
+
+- [ ] T050E [US2] Run `dotnet build .\Formica.slnx -m:1` and fix build errors.
+- [ ] T050F [US2] Run `dotnet test .\Formica.Tests\Formica.Tests.csproj` and fix test failures.
+- [ ] T050G [US2] Verify `quickstart.md` Scenario 4 and Scenario 5 against implemented behavior.
+- [ ] T050H [US2] Review `contracts/api-contracts.md` and implementation for consistency.
+- [ ] T050I [US2] Confirm no out-of-scope Storage Location, Warehouse Layout, SKU, Inventory, Receiving, Putaway, LPN, Picking, Packing, Shipping, scanner, or integration workflow was implemented.
+
+**Checkpoint**: US1 and US2 work independently and together. Phase 4 can be marked accepted after review.
 
 ---
 
@@ -285,6 +323,10 @@
 - T017-T020 can run in parallel.
 - T023 can run in parallel with endpoint foundation tasks after test fixtures exist.
 - Test tasks within each user story marked `[P]` can be created in parallel.
+- Phase 4A tests can be created before or alongside the Zone domain/persistence implementation.
+- Phase 4B must wait for Phase 4A persistence to be accepted.
+- Phase 4C must wait for Phase 4B API foundations to be accepted.
+- Phase 4D must wait for stable Zone contracts and API behavior.
 - US4 can proceed in parallel with US2/US3 after persistence foundation is stable because SKU is independent from warehouse setup in this milestone.
 - UI tasks can begin after corresponding API client methods and endpoint contracts are stable.
 
@@ -300,6 +342,7 @@
 - Keep reusable domain validation primitives under Domain, not under Features.
 - Keep `Formica.ApiService` as host/composition root; Warehouse business logic remains inside the logical Warehouse boundary.
 - Do not create EF Core migration files unless explicitly requested after a coherent persisted entity model exists.
+- Codex must not modify files under `specs/` unless the prompt explicitly asks for spec-only changes. If Codex finds a specification inconsistency, it must stop and report it instead of changing the specification.
 - Use default Blazor with Bootstrap for the first Warehouse Foundation UI implementation.
 - Do not introduce MudBlazor or another UI component framework unless a concrete implementation need is explicitly documented first.
 - Do not introduce external validation frameworks, mapping frameworks, or additional UI libraries for this milestone.
