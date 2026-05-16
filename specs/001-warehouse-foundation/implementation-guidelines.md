@@ -244,6 +244,18 @@ Runtime connection strings should come from Aspire resource references where pos
 
 Design-time EF Core infrastructure must not hardcode a local PostgreSQL username/password as the only path. Prefer environment/configuration-based lookup and fail clearly when design-time connection information is not configured.
 
+## Warehouse Foundation UI Workspace Pattern
+
+Warehouse Foundation UI should be organized as a setup workspace around the selected warehouse, not as a growing set of permanently visible CRUD forms.
+
+Child resources such as Zones and Storage Locations should be managed in contextual sections or tabs under the selected warehouse context.
+
+For the current Bootstrap milestone, create/edit forms should not remain permanently visible when they are not being used. Prefer hidden or collapsible editors for create/edit workflows.
+
+The UI structure should remain compatible with a future move to dialog, drawer, tabs, and table/data-grid components if a separate UI foundation decision introduces a component library.
+
+The current milestone remains Bootstrap-only. Do not introduce MudBlazor or another UI component library without a separate explicit UI foundation decision.
+
 ## Agent Validation Command Policy
 
 Implementation agents may run:
