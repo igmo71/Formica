@@ -44,7 +44,7 @@ Base API route:
 
 ## Validation Goals
 
-The quickstart verifies that a user can:
+The full Warehouse Foundation quickstart verifies that a user can:
 
 1. create a warehouse;
 2. verify default Location Address Rules;
@@ -56,6 +56,8 @@ The quickstart verifies that a user can:
 8. view warehouse layout;
 9. deactivate and reactivate foundation records;
 10. verify that response models include `isActive` where lifecycle state exists.
+
+M1 validation is intentionally smaller: it covers the `Formica.WebApp` target UI foundation plus Warehouse and Zone management. Storage Locations, SKUs, Warehouse Layout, and full lifecycle consistency are validated in later accepted milestones.
 
 ## Scenario 1: Create a Warehouse
 
@@ -502,9 +504,9 @@ Automated tests should cover at least:
 - seeded read-only Unit of Measure availability;
 - Warehouse Layout setup readiness indicators.
 
-## Completion Criteria
+## Full Completion Criteria
 
-Warehouse Foundation is ready for task completion when:
+Full Warehouse Foundation is ready for task completion when:
 
 - all P1 user stories from `spec.md` pass through API behavior or UI behavior;
 - Warehouse Layout shows configured Warehouse → Zones → Storage Locations;

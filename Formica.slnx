@@ -4,5 +4,7 @@
   <Project Path="Formica.ServiceDefaults/Formica.ServiceDefaults.csproj" />
   <Project Path="Formica.Tests/Formica.Tests.csproj" />
   <Project Path="Formica.Web/Formica.Web.csproj" />
-  <Project Path="Formica.WebApp/Formica.WebApp.csproj" Id="f0f32cb8-db53-4b31-928f-c47bd24983de" />
+  <Project Path="Formica.WebApp/Formica.WebApp.csproj" Id="f0f32cb8-db53-4b31-928f-c47bd24983de">
+    <Build Solution="Debug|*" Project="false" />
+  </Project>
 </Solution>

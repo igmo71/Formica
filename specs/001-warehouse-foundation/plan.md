@@ -43,7 +43,7 @@ Implementation must also follow `specs/001-warehouse-foundation/implementation-g
 **Project Type**: Modular monolith web application with separate API and UI surfaces  
 **Performance Goals**: Foundation administration workflows should remain responsive for ordinary warehouse setup data volumes; no high-throughput operational workflow is introduced by this feature  
 **Constraints**: Keep implementation simple; avoid MediatR and unnecessary third-party abstractions; preserve future compatibility with inventory workflows; keep backend business logic extractable from `Formica.ApiService`; keep Domain independent from Features, Endpoints, Persistence, Contracts, ASP.NET Core, and Blazor UI  
-**Scale/Scope**: First milestone administrative foundation; expected to support multiple warehouses, zones, storage locations, and SKUs, but not high-volume operational transaction processing yet
+**Scale/Scope**: Warehouse Foundation administrative foundation delivered through smaller accepted milestones: M1 covers `Formica.WebApp` foundation plus Warehouse and Zone management; M2 covers Storage Locations; M3 covers SKUs and barcodes; M4 covers Warehouse Layout and lifecycle consistency. No high-throughput operational transaction processing is introduced.
 
 ## Existing Solution Baseline
 
@@ -295,6 +295,22 @@ Rationale:
 - keeps the target UI implementation in one project before `Formica.Web` is removed;
 - provides a consistent component foundation for tables, forms, status indicators, and workspace navigation;
 - keeps business rules in API/domain/application code rather than UI components.
+
+### TD-011: Split Warehouse Foundation into smaller accepted milestones
+
+Warehouse Foundation remains one product feature, but implementation and review should be accepted in smaller milestones:
+
+- M1: `Formica.WebApp` foundation plus Warehouse and Zone management end-to-end;
+- M2: Storage Locations and configured address behavior end-to-end;
+- M3: SKU, Unit of Measure, and barcode behavior end-to-end;
+- M4: Warehouse Layout, lifecycle consistency, and final cross-cutting validation.
+
+Rationale:
+
+- keeps review scope manageable;
+- lets the MudBlazor migration land before expanding the UI surface;
+- avoids treating Storage Locations and SKUs as blockers for accepting the first working Warehouse/Zone vertical slice;
+- keeps the full Warehouse Foundation scope intact while reducing per-pass implementation risk.
 
 ## Project Structure
 

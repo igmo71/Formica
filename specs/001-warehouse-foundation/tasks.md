@@ -14,6 +14,13 @@
 - **[Story]**: User story from `spec.md` when applicable.
 - Tasks include concrete file paths or concrete target folders where final file decomposition is intentionally left to implementation.
 
+## Milestone Map
+
+- **M1**: `Formica.WebApp` foundation plus Warehouse and Zone management end-to-end.
+- **M2**: Storage Locations and configured address behavior end-to-end.
+- **M3**: SKU, Unit of Measure, and barcode behavior end-to-end.
+- **M4**: Warehouse Layout, lifecycle consistency, and final cross-cutting validation.
+
 ## Phase 1: Setup
 
 **Purpose**: Prepare the existing Aspire solution for Warehouse Foundation implementation.
@@ -66,7 +73,7 @@
 
 ---
 
-## Phase 3: User Story 1 - Create a warehouse (Priority: P1) MVP
+## Phase 3: M1 / User Story 1 - Create a warehouse (Priority: P1)
 
 **Goal**: A warehouse administrator can create, view, update, deactivate, and reactivate warehouses with unique warehouse codes.
 
@@ -97,7 +104,7 @@
 
 ---
 
-## Phase 4: User Story 2 - Create warehouse zones (Priority: P1)
+## Phase 4: M1 / User Story 2 - Create warehouse zones (Priority: P1)
 
 **Goal**: A warehouse administrator can create and maintain zones inside a warehouse, with zone codes unique within that warehouse.
 
@@ -164,61 +171,104 @@
 
 ---
 
-## Phase 5: User Story 3 - Create storage locations with configured addresses (Priority: P1)
+## Phase 5: M2 / User Story 3 - Create storage locations with configured addresses (Priority: P1)
 
 **Goal**: A warehouse administrator can create and maintain storage locations inside zones with validated, normalized, warehouse-unique addresses.
 
 **Independent Test**: Create a storage location, normalize address, reject duplicate normalized address in the same warehouse, allow same address in another warehouse, validate zone belongs to warehouse, update/deactivate/reactivate location.
 
-### Tests for User Story 3
+**Review Strategy**: Phase 5 MUST be implemented in small reviewable increments. Do not implement the full Storage Location user story in one Codex pass.
 
-- [ ] T051 [P] [US3] Add storage location API contract tests in `Formica.Tests/Warehouse/WarehouseFoundation/StorageLocations/StorageLocationApiTests.cs`.
+### Phase 5A: Storage Location domain and persistence
+
+**Goal**: Introduce the Storage Location domain model, normalized address persistence, and database constraints without exposing Storage Location API/UI behavior yet.
+
 - [ ] T052 [P] [US3] Add storage location address uniqueness tests in `Formica.Tests/Warehouse/WarehouseFoundation/StorageLocations/StorageLocationAddressUniquenessTests.cs`.
 - [ ] T053 [P] [US3] Add address normalization tests in `Formica.Tests/Warehouse/WarehouseFoundation/StorageLocations/LocationAddressNormalizationTests.cs`.
 - [ ] T054 [P] [US3] Add storage location lifecycle tests in `Formica.Tests/Warehouse/WarehouseFoundation/StorageLocations/StorageLocationLifecycleTests.cs`.
-
-### Implementation for User Story 3
-
 - [ ] T055 [US3] Create `StorageLocation` domain model in `Formica.ApiService/Warehouse/WarehouseFoundation/Domain/StorageLocations/StorageLocation.cs`.
 - [ ] T056 [US3] Create Storage Location EF configuration in `Formica.ApiService/Warehouse/Persistence/Configurations/WarehouseFoundation/StorageLocationConfiguration.cs`.
 - [ ] T057 [US3] Add normalized address persistence support in `Formica.ApiService/Warehouse/WarehouseFoundation/Domain/StorageLocations/StorageLocation.cs` and `Formica.ApiService/Warehouse/Persistence/Configurations/WarehouseFoundation/StorageLocationConfiguration.cs`.
+
+**Checkpoint**: Storage Location domain and persistence constraints exist, including normalized address uniqueness within a Warehouse and Zone-to-Warehouse relationship validation support.
+
+### Phase 5B: Storage Location create/list/get API
+
+**Goal**: Expose create/list/get behavior for Storage Locations through contracts, features, endpoints, and API tests.
+
+- [ ] T051 [P] [US3] Add storage location create/list/get API contract tests in `Formica.Tests/Warehouse/WarehouseFoundation/StorageLocations/StorageLocationApiTests.cs`.
 - [ ] T058 [US3] Create storage location request/response DTOs in `Formica.ApiService/Warehouse/WarehouseFoundation/Contracts/StorageLocations/`.
 - [ ] T059 [US3] Implement create storage location feature in `Formica.ApiService/Warehouse/WarehouseFoundation/Features/StorageLocations/CreateStorageLocation.cs`.
 - [ ] T060 [US3] Implement list/get storage location features in `Formica.ApiService/Warehouse/WarehouseFoundation/Features/StorageLocations/`.
+
+**Checkpoint**: Storage Location create/list/get works through API. Duplicate normalized address in the same Warehouse is rejected.
+
+### Phase 5C: Storage Location update and lifecycle API
+
+**Goal**: Add update/deactivate/reactivate behavior for Storage Locations while preserving stable identity and normalized address semantics.
+
 - [ ] T061 [US3] Implement update storage location feature in `Formica.ApiService/Warehouse/WarehouseFoundation/Features/StorageLocations/UpdateStorageLocation.cs`.
 - [ ] T062 [US3] Implement deactivate/reactivate storage location features in `Formica.ApiService/Warehouse/WarehouseFoundation/Features/StorageLocations/`.
 - [ ] T063 [US3] Implement storage location endpoints in `Formica.ApiService/Warehouse/WarehouseFoundation/Endpoints/StorageLocationEndpoints.cs`.
+
+**Checkpoint**: Storage Location update/deactivate/reactivate works through API. Reactivation reruns uniqueness and validation checks.
+
+### Phase 5D: Storage Location UI/client
+
+**Goal**: Add Storage Location client methods and a MudBlazor-based Storage Location management component in `Formica.WebApp` without moving business rules into the UI.
+
 - [ ] T064 [US3] Add Storage Location API client methods in `Formica.WebApp/Warehouse/WarehouseFoundation/ApiClients/WarehouseFoundationApiClient.cs`.
 - [ ] T065 [US3] Add MudBlazor Storage Location management component in `Formica.WebApp/Warehouse/WarehouseFoundation/Components/StorageLocationsPanel.razor`.
 
-**Checkpoint**: P1 warehouse setup path works through Warehouse → Zone → Storage Location.
+**Checkpoint**: A user can manage Storage Locations for a selected Warehouse/Zone through the MudBlazor UI in `Formica.WebApp`.
+
+### Phase 5E: M2 consistency pass
+
+**Goal**: Validate that Storage Locations are coherent across specs, API behavior, persistence, UI, and quickstart scenarios.
+
+- [ ] T065A [US3] Run the M2 consistency pass allowed by current agent/test policy: build if requested, verify quickstart Scenarios 6 and 7, review contracts, and confirm no out-of-scope SKU, Warehouse Layout, Inventory, Receiving, Putaway, LPN, scanner, or integration workflow was implemented.
+
+**Checkpoint**: M2 is ready for review after Warehouse → Zone → Storage Location works end-to-end.
 
 ---
 
-## Phase 6: User Story 4 - Maintain basic SKUs (Priority: P1)
+## Phase 6: M3 / User Story 4 - Maintain basic SKUs (Priority: P1)
 
 **Goal**: A warehouse administrator can create and maintain basic SKUs with base unit of measure and multiple unique barcode values.
 
 **Independent Test**: Seed units of measure, create SKU, add multiple barcodes, reject duplicate SKU code, reject duplicate barcode across SKUs, update/deactivate/reactivate SKU.
 
-### Tests for User Story 4
+**Review Strategy**: Phase 6 MUST be implemented in small reviewable increments. Do not implement the full SKU user story in one Codex pass.
+
+### Phase 6A: Unit of Measure seed/list
 
 - [ ] T066 [P] [US4] Add Unit of Measure API tests in `Formica.Tests/Warehouse/WarehouseFoundation/UnitsOfMeasure/UnitOfMeasureApiTests.cs`.
-- [ ] T067 [P] [US4] Add SKU API contract tests in `Formica.Tests/Warehouse/WarehouseFoundation/Skus/SkuApiTests.cs`.
+- [ ] T071 [US4] Create `UnitOfMeasure` domain model in `Formica.ApiService/Warehouse/WarehouseFoundation/Domain/UnitsOfMeasure/UnitOfMeasure.cs`.
+- [ ] T074 [US4] Create Unit of Measure EF configuration in `Formica.ApiService/Warehouse/Persistence/Configurations/WarehouseFoundation/UnitOfMeasureConfiguration.cs`.
+- [ ] T077 [US4] Add seeded read-only Unit of Measure data in `Formica.ApiService/Warehouse/Persistence/WarehouseFoundationSeedData.cs`.
+- [ ] T078 [US4] Create Unit of Measure DTOs and list feature in `Formica.ApiService/Warehouse/WarehouseFoundation/Contracts/UnitsOfMeasure/` and `Formica.ApiService/Warehouse/WarehouseFoundation/Features/UnitsOfMeasure/`.
+
+**Checkpoint**: Seeded read-only Units of Measure are available through API behavior needed by SKU creation.
+
+### Phase 6B: SKU and barcode domain and persistence
+
+**Goal**: Introduce SKU and barcode domain models plus persistence constraints without exposing SKU API/UI behavior yet.
+
 - [ ] T068 [P] [US4] Add SKU uniqueness persistence tests in `Formica.Tests/Warehouse/WarehouseFoundation/Skus/SkuPersistenceTests.cs`.
 - [ ] T069 [P] [US4] Add barcode uniqueness tests in `Formica.Tests/Warehouse/WarehouseFoundation/Skus/SkuBarcodeUniquenessTests.cs`.
 - [ ] T070 [P] [US4] Add SKU lifecycle tests in `Formica.Tests/Warehouse/WarehouseFoundation/Skus/SkuLifecycleTests.cs`.
-
-### Implementation for User Story 4
-
-- [ ] T071 [US4] Create `UnitOfMeasure` domain model in `Formica.ApiService/Warehouse/WarehouseFoundation/Domain/UnitsOfMeasure/UnitOfMeasure.cs`.
 - [ ] T072 [US4] Create `Sku` domain model in `Formica.ApiService/Warehouse/WarehouseFoundation/Domain/Skus/Sku.cs`.
 - [ ] T073 [US4] Create `SkuBarcode` domain model in `Formica.ApiService/Warehouse/WarehouseFoundation/Domain/Skus/SkuBarcode.cs`.
-- [ ] T074 [US4] Create Unit of Measure EF configuration in `Formica.ApiService/Warehouse/Persistence/Configurations/WarehouseFoundation/UnitOfMeasureConfiguration.cs`.
 - [ ] T075 [US4] Create SKU EF configuration in `Formica.ApiService/Warehouse/Persistence/Configurations/WarehouseFoundation/SkuConfiguration.cs`.
 - [ ] T076 [US4] Create SKU Barcode EF configuration in `Formica.ApiService/Warehouse/Persistence/Configurations/WarehouseFoundation/SkuBarcodeConfiguration.cs`.
-- [ ] T077 [US4] Add seeded read-only Unit of Measure data in `Formica.ApiService/Warehouse/Persistence/WarehouseFoundationSeedData.cs`.
-- [ ] T078 [US4] Create Unit of Measure DTOs and list feature in `Formica.ApiService/Warehouse/WarehouseFoundation/Contracts/UnitsOfMeasure/` and `Formica.ApiService/Warehouse/WarehouseFoundation/Features/UnitsOfMeasure/`.
+
+**Checkpoint**: SKU code and barcode uniqueness constraints exist and SKU lifecycle behavior is modeled.
+
+### Phase 6C: SKU and barcode API
+
+**Goal**: Expose SKU create/list/get/update/deactivate/reactivate behavior through contracts, features, endpoints, and API tests.
+
+- [ ] T067 [P] [US4] Add SKU API contract tests in `Formica.Tests/Warehouse/WarehouseFoundation/Skus/SkuApiTests.cs`.
 - [ ] T079 [US4] Create SKU request/response DTOs in `Formica.ApiService/Warehouse/WarehouseFoundation/Contracts/Skus/`.
 - [ ] T080 [US4] Implement create SKU feature in `Formica.ApiService/Warehouse/WarehouseFoundation/Features/Skus/CreateSku.cs`.
 - [ ] T081 [US4] Implement list/get SKU features in `Formica.ApiService/Warehouse/WarehouseFoundation/Features/Skus/`.
@@ -226,14 +276,29 @@
 - [ ] T083 [US4] Implement deactivate/reactivate SKU features in `Formica.ApiService/Warehouse/WarehouseFoundation/Features/Skus/`.
 - [ ] T084 [US4] Implement Unit of Measure endpoints in `Formica.ApiService/Warehouse/WarehouseFoundation/Endpoints/UnitOfMeasureEndpoints.cs`.
 - [ ] T085 [US4] Implement SKU endpoints in `Formica.ApiService/Warehouse/WarehouseFoundation/Endpoints/SkuEndpoints.cs`.
+
+**Checkpoint**: SKU and barcode behavior works through API. Duplicate SKU code and duplicate barcode values are rejected.
+
+### Phase 6D: SKU UI/client
+
+**Goal**: Add SKU and Unit of Measure client methods plus a MudBlazor-based SKU management page in `Formica.WebApp` without moving business rules into the UI.
+
 - [ ] T086 [US4] Add SKU and Unit of Measure API client methods in `Formica.WebApp/Warehouse/WarehouseFoundation/ApiClients/WarehouseFoundationApiClient.cs`.
 - [ ] T087 [US4] Add MudBlazor SKU management page in `Formica.WebApp/Warehouse/WarehouseFoundation/Pages/Skus.razor`.
 
-**Checkpoint**: All P1 user stories work independently.
+**Checkpoint**: A user can manage SKUs and barcode values through the MudBlazor UI in `Formica.WebApp`.
+
+### Phase 6E: M3 consistency pass
+
+**Goal**: Validate that SKUs and barcodes are coherent across specs, API behavior, persistence, UI, and quickstart scenarios.
+
+- [ ] T087A [US4] Run the M3 consistency pass allowed by current agent/test policy: build if requested, verify quickstart Scenarios 8, 9, 10, 13, and 15, review contracts, and confirm no out-of-scope Inventory, Receiving, Putaway, LPN, scanner, or integration workflow was implemented.
+
+**Checkpoint**: M3 is ready for review after SKU and barcode behavior works end-to-end.
 
 ---
 
-## Phase 7: User Story 5 - View basic warehouse layout (Priority: P2)
+## Phase 7: M4 / User Story 5 - View basic warehouse layout (Priority: P2)
 
 **Goal**: An operations manager can view Warehouse → Zones → Storage Locations with active/inactive state and setup readiness indicators.
 
@@ -258,7 +323,7 @@
 
 ---
 
-## Phase 8: User Story 6 - Maintain stable references for future inventory workflows (Priority: P2)
+## Phase 8: M4 / User Story 6 - Maintain stable references for future inventory workflows (Priority: P2)
 
 **Goal**: Foundation records preserve stable identity across update, deactivate, and reactivate operations and expose lifecycle state consistently.
 
@@ -281,7 +346,7 @@
 
 ---
 
-## Phase 9: Polish and Cross-Cutting Validation
+## Phase 9: M4 / Polish and Cross-Cutting Validation
 
 **Purpose**: Final consistency, validation, documentation, and quickstart verification. Polish means final cleanup and presentation-quality finishing work, not new feature scope.
 
@@ -301,23 +366,23 @@
 
 - **Phase 1 Setup**: no dependencies.
 - **Phase 2 Foundational**: depends on Phase 1.
-- **US1 Warehouses**: depends on Phase 2.
-- **US2 Zones**: depends on Phase 2 and uses Warehouse data from US1 for end-to-end validation.
-- **US3 Storage Locations**: depends on US1 and US2.
-- **US4 SKUs**: depends on Phase 2 and can run after US1 if persistence foundation is ready.
-- **US5 Warehouse Layout**: depends on US1, US2, and US3.
-- **US6 Stable References**: depends on US1 through US5 implementations.
-- **Polish**: depends on selected user stories being complete.
+- **M1 / US1 Warehouses**: depends on Phase 2.
+- **M1 / US2 Zones**: depends on Phase 2 and uses Warehouse data from US1 for end-to-end validation.
+- **M2 / US3 Storage Locations**: depends on accepted M1.
+- **M3 / US4 SKUs**: depends on Phase 2 and can run after US1 if persistence foundation is ready, but is accepted as a separate milestone.
+- **M4 / US5 Warehouse Layout**: depends on accepted M2.
+- **M4 / US6 Stable References**: depends on US1 through US5 implementations.
+- **M4 / Polish**: depends on selected user stories being complete.
 
-### MVP Path
+### Accepted Milestone Path
 
 1. Complete Phase 1 Setup.
 2. Complete Phase 2 Foundational.
-3. Complete US1 Warehouses.
-4. Complete US2 Zones.
-5. Complete US3 Storage Locations.
-6. Complete US4 SKUs.
-7. Stop and validate all P1 stories.
+3. Complete M1: `Formica.WebApp` foundation, US1 Warehouse management migration, and US2 Zone management.
+4. Stop and validate M1 before expanding the Warehouse Foundation UI surface.
+5. Complete M2: Storage Locations and configured address behavior.
+6. Complete M3: SKU, Unit of Measure, and barcode behavior.
+7. Complete M4: Warehouse Layout, lifecycle consistency, and final cross-cutting validation.
 
 ### Parallel Opportunities
 
@@ -329,23 +394,19 @@
 - Phase 4B must wait for Phase 4A persistence to be accepted.
 - Phase 4C must wait for Phase 4B API foundations to be accepted.
 - Phase 4D must wait for stable Zone contracts and API behavior.
-- US4 can proceed in parallel with US2/US3 after persistence foundation is stable because SKU is independent from warehouse setup in this milestone.
+- Phase 5A tests can be created before or alongside the Storage Location domain/persistence implementation.
+- Phase 5B must wait for Phase 5A persistence to be accepted.
+- Phase 5C must wait for Phase 5B API foundations to be accepted.
+- Phase 5D must wait for stable Storage Location contracts and API behavior.
+- Phase 6A can proceed independently after Phase 2.
+- Phase 6B can proceed after Phase 2 and Unit of Measure direction is stable.
+- Phase 6C must wait for SKU/barcode persistence to be accepted.
+- Phase 6D must wait for stable SKU contracts and API behavior.
 - UI tasks can begin after corresponding API client methods and endpoint contracts are stable.
 
 ## Notes
 
-- Read and follow `specs/001-warehouse-foundation/implementation-guidelines.md` before implementing any task.
-- Tests should be written before implementation and should fail before the corresponding implementation task is completed.
-- Use lightweight command/query naming inside vertical slices: commands mutate state, queries read state.
-- Do not introduce MediatR, a global dispatcher, or a generic CQRS framework for this milestone.
-- Keep endpoint handlers thin; delegate behavior to feature/application/domain code.
-- Keep business rules out of EF configuration and Blazor API clients.
-- Keep Domain independent from Features, Endpoints, Persistence, Contracts, ASP.NET Core, and Blazor UI.
-- Keep reusable domain validation primitives under Domain, not under Features.
-- Keep `Formica.ApiService` as host/composition root; Warehouse business logic remains inside the logical Warehouse boundary.
-- Do not create EF Core migration files unless explicitly requested after a coherent persisted entity model exists.
-- Codex must not modify files under `specs/` unless the prompt explicitly asks for spec-only changes. If Codex finds a specification inconsistency, it must stop and report it instead of changing the specification.
-- Use MudBlazor 9.4.0 as the approved UI component library for the `Formica.WebApp` Warehouse Foundation UI implementation.
-- Do not add new Warehouse Foundation UI functionality to `Formica.Web`; use it only as the temporary Bootstrap baseline/migration source until removal.
-- Do not introduce external validation frameworks, mapping frameworks, or additional UI libraries for this milestone.
+- Read and follow `specs/001-warehouse-foundation/implementation-guidelines.md` before implementing any task; it is the authoritative guardrail source for dependency direction, domain/result patterns, migration policy, UI rules, and agent validation policy.
+- Tests should be written before implementation where a task introduces behavior, and should fail before the corresponding implementation task is completed.
+- `Formica.WebApp` is the target UI project. `Formica.Web` is a temporary Bootstrap baseline/migration source only.
 - Commit after each task or coherent task group.
