@@ -10,6 +10,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Formica.ApiService\Formica.ApiService.csproj" />
+    <ProjectReference Include="..\Formica.WebApp\Formica.WebApp.csproj" />
     <ProjectReference Include="..\Formica.Web\Formica.Web.csproj" />
   </ItemGroup>
 
