@@ -27,11 +27,14 @@ Formica.slnx
 ├── Formica.AppHost/
 ├── Formica.ServiceDefaults/
 ├── Formica.ApiService/
+├── Formica.WebApp/
 ├── Formica.Web/
 └── Formica.Tests/
 ```
 
 Warehouse Foundation expects PostgreSQL to be orchestrated by Aspire once persistence is implemented.
+
+Manual UI validation should use `Formica.WebApp`, the MudBlazor-based target Blazor UI. `Formica.Web` is a temporary Bootstrap baseline/migration source until required behavior is moved and the project is removed.
 
 Base API route:
 
@@ -468,7 +471,7 @@ Attempting create/update/delete Unit of Measure is not part of this milestone.
 
 ## Manual UI Validation
 
-When Blazor UI is implemented, it should allow the user to verify the same behavior visually:
+When the `Formica.WebApp` Blazor UI is implemented, it should allow the user to verify the same behavior visually:
 
 - create Warehouse;
 - create Zones;

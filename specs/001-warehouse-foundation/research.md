@@ -18,7 +18,7 @@ It resolves implementation-facing questions from `plan.md` before Phase 1 design
 | R-001 | Use PostgreSQL through EF Core/Npgsql as the initial relational database provider. |
 | R-002 | Keep Warehouse persistence at `Formica.ApiService/Warehouse/Persistence` and keep Warehouse Foundation feature code at `Formica.ApiService/Warehouse/WarehouseFoundation`. |
 | R-003 | Use Minimal API endpoint groups under `Formica.ApiService/Warehouse/WarehouseFoundation/Endpoints`. |
-| R-004 | Use Blazor pages/components/API clients under `Formica.Web/Warehouse/WarehouseFoundation`. |
+| R-004 | Use MudBlazor-based Blazor pages/components/API clients under `Formica.WebApp/Warehouse/WarehouseFoundation`. |
 | R-005 | Use a pragmatic mixed testing approach in `Formica.Tests`. |
 | R-006 | Model location address rules as simple configurable warehouse-level validation rules. |
 | R-007 | Model capacity attributes as optional simple value-object-style data without capacity calculations. |
@@ -189,20 +189,24 @@ Expected route groups:
 - Endpoint grouping should stay capability-oriented, not persistence-table-oriented.
 - Endpoint handlers should stay thin and delegate behavior to feature/application/domain code.
 
-## R-004: Blazor Placement
+## R-004: Blazor Placement and UI Foundation
 
 ### Decision
 
-Place Blazor UI code under:
+Place target Blazor UI code under:
 
 ```text
-Formica.Web/
+Formica.WebApp/
 └── Warehouse/
     └── WarehouseFoundation/
         ├── Pages/
         ├── Components/
         └── ApiClients/
 ```
+
+Use MudBlazor 9.4.0 as the approved Warehouse Foundation UI component library in `Formica.WebApp`.
+
+`Formica.Web` remains a temporary Bootstrap baseline and migration source until required behavior is moved into `Formica.WebApp` and the old project can be removed.
 
 `ApiClients` are typed wrappers used by Blazor pages/components to call `Formica.ApiService` endpoints.
 
@@ -212,17 +216,22 @@ Formica.Web/
 - Keeps Warehouse Foundation UI code close together.
 - Separates page composition, reusable components, and API access helpers.
 - Avoids confusing `ApiClients` with domain services or external integration clients.
+- Supports expected administration workspace patterns such as tables, tabs, dialogs or drawers, forms, and validation presentation without expanding custom Bootstrap UI code.
+- Provides a single target UI foundation before the temporary Bootstrap project is removed.
 
 ### Alternatives Considered
 
 - **Global `Pages/Warehouse` and `Components/Warehouse` folders**: acceptable but less explicit as a feature boundary.
 - **`Services` instead of `ApiClients`**: rejected because `Services` is too broad and tends to collect unrelated concerns.
 - **Direct `HttpClient` calls in pages**: rejected because typed API clients make UI code clearer and easier to test/refactor.
+- **Continue Bootstrap-first implementation in `Formica.Web`**: rejected because Warehouse Foundation is expected to grow into a richer CRUD/workspace UI and the project is being replaced by the MudBlazor-based `Formica.WebApp`.
 
 ### Consequences
 
 - UI API access should stay thin.
 - Business rules must remain in API/domain/application behavior, not in Blazor `ApiClients`.
+- New Warehouse Foundation UI work should be implemented in `Formica.WebApp`.
+- Existing Bootstrap UI behavior in `Formica.Web` may be used as a migration reference but should not be extended for new Warehouse Foundation features.
 
 ## R-005: Testing Strategy
 

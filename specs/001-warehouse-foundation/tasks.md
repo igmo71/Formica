@@ -24,6 +24,7 @@
 - [X] T004 Create Warehouse module folders under `Formica.ApiService/Warehouse/`.
 - [X] T005 Create Warehouse Foundation UI folders under `Formica.Web/Warehouse/WarehouseFoundation/`.
 - [X] T006 Create Warehouse Foundation test folders under `Formica.Tests/Warehouse/WarehouseFoundation/`.
+- [ ] T006A Create target Warehouse Foundation UI folders under `Formica.WebApp/Warehouse/WarehouseFoundation/` for the MudBlazor implementation.
 
 ---
 
@@ -90,8 +91,9 @@
 - [X] T035 [US1] Implement warehouse endpoints in `Formica.ApiService/Warehouse/WarehouseFoundation/Endpoints/WarehouseEndpoints.cs`.
 - [X] T036 [US1] Add Warehouse API client methods in `Formica.Web/Warehouse/WarehouseFoundation/ApiClients/WarehouseFoundationApiClient.cs`.
 - [X] T037 [US1] Add basic Warehouse management page in `Formica.Web/Warehouse/WarehouseFoundation/Pages/Warehouses.razor`.
+- [ ] T037A [US1] Migrate Warehouse API client methods and Warehouse management UI from `Formica.Web` into MudBlazor-based `Formica.WebApp/Warehouse/WarehouseFoundation/`.
 
-**Checkpoint**: US1 works independently through API and has initial UI surface.
+**Checkpoint**: US1 works independently through API and has initial target UI surface in `Formica.WebApp`.
 
 ---
 
@@ -141,12 +143,12 @@
 
 ### Phase 4D: Zone UI/client
 
-**Goal**: Add Zone client methods and a Bootstrap-based Zone management component without moving business rules into the UI.
+**Goal**: Add Zone client methods and a MudBlazor-based Zone management component in `Formica.WebApp` without moving business rules into the UI.
 
-- [ ] T049D [US2] Add Zone API client methods in `Formica.Web/Warehouse/WarehouseFoundation/ApiClients/WarehouseFoundationApiClient.cs`.
-- [ ] T050D [US2] Add Zone management component in `Formica.Web/Warehouse/WarehouseFoundation/Components/ZonesPanel.razor`.
+- [ ] T049D [US2] Add Zone API client methods in `Formica.WebApp/Warehouse/WarehouseFoundation/ApiClients/WarehouseFoundationApiClient.cs`.
+- [ ] T050D [US2] Add MudBlazor Zone management component in `Formica.WebApp/Warehouse/WarehouseFoundation/Components/ZonesPanel.razor`.
 
-**Checkpoint**: A user can manage zones for a selected warehouse through the initial Blazor/Bootstrap UI. UI shows active/inactive state and delegates business validation to API/domain/application behavior.
+**Checkpoint**: A user can manage zones for a selected warehouse through the MudBlazor UI in `Formica.WebApp`. UI shows active/inactive state and delegates business validation to API/domain/application behavior.
 
 ### Phase 4E: US2 consistency pass
 
@@ -186,8 +188,8 @@
 - [ ] T061 [US3] Implement update storage location feature in `Formica.ApiService/Warehouse/WarehouseFoundation/Features/StorageLocations/UpdateStorageLocation.cs`.
 - [ ] T062 [US3] Implement deactivate/reactivate storage location features in `Formica.ApiService/Warehouse/WarehouseFoundation/Features/StorageLocations/`.
 - [ ] T063 [US3] Implement storage location endpoints in `Formica.ApiService/Warehouse/WarehouseFoundation/Endpoints/StorageLocationEndpoints.cs`.
-- [ ] T064 [US3] Add Storage Location API client methods in `Formica.Web/Warehouse/WarehouseFoundation/ApiClients/WarehouseFoundationApiClient.cs`.
-- [ ] T065 [US3] Add Storage Location management component in `Formica.Web/Warehouse/WarehouseFoundation/Components/StorageLocationsPanel.razor`.
+- [ ] T064 [US3] Add Storage Location API client methods in `Formica.WebApp/Warehouse/WarehouseFoundation/ApiClients/WarehouseFoundationApiClient.cs`.
+- [ ] T065 [US3] Add MudBlazor Storage Location management component in `Formica.WebApp/Warehouse/WarehouseFoundation/Components/StorageLocationsPanel.razor`.
 
 **Checkpoint**: P1 warehouse setup path works through Warehouse → Zone → Storage Location.
 
@@ -224,8 +226,8 @@
 - [ ] T083 [US4] Implement deactivate/reactivate SKU features in `Formica.ApiService/Warehouse/WarehouseFoundation/Features/Skus/`.
 - [ ] T084 [US4] Implement Unit of Measure endpoints in `Formica.ApiService/Warehouse/WarehouseFoundation/Endpoints/UnitOfMeasureEndpoints.cs`.
 - [ ] T085 [US4] Implement SKU endpoints in `Formica.ApiService/Warehouse/WarehouseFoundation/Endpoints/SkuEndpoints.cs`.
-- [ ] T086 [US4] Add SKU and Unit of Measure API client methods in `Formica.Web/Warehouse/WarehouseFoundation/ApiClients/WarehouseFoundationApiClient.cs`.
-- [ ] T087 [US4] Add SKU management page in `Formica.Web/Warehouse/WarehouseFoundation/Pages/Skus.razor`.
+- [ ] T086 [US4] Add SKU and Unit of Measure API client methods in `Formica.WebApp/Warehouse/WarehouseFoundation/ApiClients/WarehouseFoundationApiClient.cs`.
+- [ ] T087 [US4] Add MudBlazor SKU management page in `Formica.WebApp/Warehouse/WarehouseFoundation/Pages/Skus.razor`.
 
 **Checkpoint**: All P1 user stories work independently.
 
@@ -248,9 +250,9 @@
 - [ ] T091 [US5] Implement Warehouse Layout query feature in `Formica.ApiService/Warehouse/WarehouseFoundation/Features/WarehouseLayout/GetWarehouseLayout.cs`.
 - [ ] T092 [US5] Implement setup readiness calculation in `Formica.ApiService/Warehouse/WarehouseFoundation/Features/WarehouseLayout/CalculateSetupReadiness.cs`.
 - [ ] T093 [US5] Implement Warehouse Layout endpoint in `Formica.ApiService/Warehouse/WarehouseFoundation/Endpoints/WarehouseLayoutEndpoints.cs`.
-- [ ] T094 [US5] Add Warehouse Layout API client method in `Formica.Web/Warehouse/WarehouseFoundation/ApiClients/WarehouseFoundationApiClient.cs`.
-- [ ] T095 [US5] Add Warehouse Layout page in `Formica.Web/Warehouse/WarehouseFoundation/Pages/WarehouseLayout.razor`.
-- [ ] T096 [US5] Add setup readiness UI component in `Formica.Web/Warehouse/WarehouseFoundation/Components/SetupReadinessPanel.razor`.
+- [ ] T094 [US5] Add Warehouse Layout API client method in `Formica.WebApp/Warehouse/WarehouseFoundation/ApiClients/WarehouseFoundationApiClient.cs`.
+- [ ] T095 [US5] Add MudBlazor Warehouse Layout page in `Formica.WebApp/Warehouse/WarehouseFoundation/Pages/WarehouseLayout.razor`.
+- [ ] T096 [US5] Add MudBlazor setup readiness UI component in `Formica.WebApp/Warehouse/WarehouseFoundation/Components/SetupReadinessPanel.razor`.
 
 **Checkpoint**: Warehouse Layout supports setup verification.
 
@@ -273,7 +275,7 @@
 - [ ] T100 [US6] Ensure all list/detail response DTOs include `isActive` in `Formica.ApiService/Warehouse/WarehouseFoundation/Contracts/`.
 - [ ] T101 [US6] Ensure all list features apply `includeInactive=false` by default in `Formica.ApiService/Warehouse/WarehouseFoundation/Features/`.
 - [ ] T102 [US6] Ensure all reactivation features rerun uniqueness and validation checks in `Formica.ApiService/Warehouse/WarehouseFoundation/Features/`.
-- [ ] T103 [US6] Ensure UI surfaces inactive state in `Formica.Web/Warehouse/WarehouseFoundation/Pages/` and `Formica.Web/Warehouse/WarehouseFoundation/Components/`.
+- [ ] T103 [US6] Ensure UI surfaces inactive state in `Formica.WebApp/Warehouse/WarehouseFoundation/Pages/` and `Formica.WebApp/Warehouse/WarehouseFoundation/Components/`.
 
 **Checkpoint**: Lifecycle semantics are consistent across Warehouse Foundation.
 
@@ -343,7 +345,7 @@
 - Keep `Formica.ApiService` as host/composition root; Warehouse business logic remains inside the logical Warehouse boundary.
 - Do not create EF Core migration files unless explicitly requested after a coherent persisted entity model exists.
 - Codex must not modify files under `specs/` unless the prompt explicitly asks for spec-only changes. If Codex finds a specification inconsistency, it must stop and report it instead of changing the specification.
-- Use default Blazor with Bootstrap for the first Warehouse Foundation UI implementation.
-- Do not introduce MudBlazor or another UI component framework unless a concrete implementation need is explicitly documented first.
+- Use MudBlazor 9.4.0 as the approved UI component library for the `Formica.WebApp` Warehouse Foundation UI implementation.
+- Do not add new Warehouse Foundation UI functionality to `Formica.Web`; use it only as the temporary Bootstrap baseline/migration source until removal.
 - Do not introduce external validation frameworks, mapping frameworks, or additional UI libraries for this milestone.
 - Commit after each task or coherent task group.

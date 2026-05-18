@@ -23,7 +23,8 @@ The implementation approach is a pragmatic modular monolith using the existing A
 - `Formica.AppHost` for Aspire orchestration;
 - `Formica.ServiceDefaults` for shared service defaults and observability baseline;
 - `Formica.ApiService` for the Web API surface and initial backend host;
-- `Formica.Web` for the Blazor UI surface;
+- `Formica.WebApp` for the MudBlazor-based Blazor UI surface;
+- `Formica.Web` as the temporary Bootstrap baseline/legacy UI source until required functionality is migrated and the project is removed;
 - `Formica.Tests` for Aspire/xUnit-based tests.
 
 `Formica.ApiService` is the physical host/composition root for the first milestone, not the conceptual owner of Warehouse business logic. Warehouse backend logic must remain organized inside an extractable logical Warehouse boundary.
@@ -35,7 +36,7 @@ Implementation must also follow `specs/001-warehouse-foundation/implementation-g
 ## Technical Context
 
 **Language/Version**: C# / .NET 10  
-**Primary Dependencies**: ASP.NET Core, Aspire 13.2.4, Blazor, EF Core, Npgsql EF Core provider, OpenTelemetry baseline through ServiceDefaults  
+**Primary Dependencies**: ASP.NET Core, Aspire 13.2.4, Blazor Server, MudBlazor 9.4.0, EF Core, Npgsql EF Core provider, OpenTelemetry baseline through ServiceDefaults
 **Storage**: PostgreSQL through EF Core/Npgsql  
 **Testing**: `Formica.Tests` using xUnit v3, Microsoft.NET.Test.Sdk, Aspire.Hosting.Testing, coverlet collector  
 **Target Platform**: Server-side web application with Web API and Blazor UI, developed and run through Aspire AppHost  
@@ -53,16 +54,18 @@ Formica.slnx
 ├── Formica.AppHost/Formica.AppHost.csproj
 ├── Formica.ServiceDefaults/Formica.ServiceDefaults.csproj
 ├── Formica.ApiService/Formica.ApiService.csproj
+├── Formica.WebApp/Formica.WebApp.csproj
 ├── Formica.Web/Formica.Web.csproj
 └── Formica.Tests/Formica.Tests.csproj
 ```
 
 Observed baseline:
 
-- `Formica.AppHost` targets `net10.0`, uses `Aspire.AppHost.Sdk/13.2.4`, references `Formica.ApiService` and `Formica.Web`, and includes Aspire Redis hosting.
+- `Formica.AppHost` targets `net10.0`, uses `Aspire.AppHost.Sdk/13.2.4`, references `Formica.ApiService`, `Formica.WebApp`, and `Formica.Web`, and includes Aspire Redis hosting.
 - `Formica.ServiceDefaults` targets `net10.0`, is marked as Aspire shared project, and includes OpenTelemetry packages.
 - `Formica.ApiService` targets `net10.0`, references `Formica.ServiceDefaults`, and includes `Microsoft.AspNetCore.OpenApi`.
-- `Formica.Web` targets `net10.0`, references `Formica.ServiceDefaults`, and includes Aspire Redis output caching.
+- `Formica.WebApp` targets `net10.0`, references `Formica.ServiceDefaults`, uses MudBlazor 9.4.0, and includes Aspire Redis output caching.
+- `Formica.Web` targets `net10.0`, references `Formica.ServiceDefaults`, includes Aspire Redis output caching, and remains a temporary Bootstrap baseline/legacy source.
 - `Formica.Tests` targets `net10.0`, references `Formica.AppHost`, uses xUnit v3 and Aspire.Hosting.Testing.
 
 ## Constitution Check
@@ -121,7 +124,7 @@ Plan includes validation strategy and tests for acceptance criteria. Operational
 
 Status: PASS.
 
-Use built-in .NET, ASP.NET Core, Blazor, EF Core, Npgsql, and Aspire capabilities by default. Do not introduce MediatR, external validation frameworks, mapping frameworks, or additional UI libraries unless justified later.
+Use built-in .NET, ASP.NET Core, Blazor, EF Core, Npgsql, Aspire capabilities, and the explicitly approved MudBlazor UI foundation by default. Do not introduce MediatR, external validation frameworks, mapping frameworks, or additional UI libraries unless justified later.
 
 ### X. Human-Readable Project Memory
 
@@ -137,7 +140,8 @@ Warehouse Foundation will use the current solution baseline:
 
 - API host and composition in `Formica.ApiService`;
 - Warehouse backend logic inside a logical `Warehouse` boundary under `Formica.ApiService` for this milestone;
-- Blazor UI behavior in `Formica.Web`;
+- MudBlazor-based Blazor UI behavior in `Formica.WebApp`;
+- temporary Bootstrap UI behavior in `Formica.Web` only as a migration source until removal;
 - orchestration in `Formica.AppHost` for PostgreSQL and supporting resources;
 - shared telemetry/service defaults through `Formica.ServiceDefaults`;
 - tests in `Formica.Tests`.
@@ -277,20 +281,20 @@ Rationale:
 - avoids premature dispatcher abstractions;
 - leaves room for a simple internal dispatcher later if repetition or cross-cutting pipelines justify it.
 
-### TD-010: Start with default Blazor and Bootstrap for UI
+### TD-010: Use MudBlazor-based Blazor Server UI in Formica.WebApp
 
-Warehouse Foundation should use the default Blazor UI stack with Bootstrap for the first milestone.
+Warehouse Foundation should use `Formica.WebApp` as the target Blazor Server UI project and MudBlazor 9.4.0 as the approved component library.
 
-Do not introduce MudBlazor or another component framework during Warehouse Foundation unless implementation exposes a concrete need that cannot be handled reasonably with default Blazor and Bootstrap.
+`Formica.Web` remains a temporary Bootstrap baseline and migration source while already implemented UI behavior is moved into `Formica.WebApp`. New Warehouse Foundation UI work should be implemented in `Formica.WebApp`, not split between both UI projects.
 
-MudBlazor may be evaluated later if the UI requires richer corporate components such as advanced grids, dialogs, tree views, autocomplete, or more complex forms.
+MudBlazor is approved for expected administration workspace patterns such as tables, tabs, dialogs or drawers, forms, validation presentation, and stateful management components. This decision does not approve unrelated UI libraries or non-UI frameworks.
 
 Rationale:
 
-- keeps dependencies minimal;
-- aligns with the existing template baseline;
-- preserves simple, inspectable UI markup;
-- avoids adopting a component framework before the first milestone proves the need.
+- supports richer warehouse administration workflows without hand-rolling Bootstrap-heavy CRUD surfaces;
+- keeps the target UI implementation in one project before `Formica.Web` is removed;
+- provides a consistent component foundation for tables, forms, status indicators, and workspace navigation;
+- keeps business rules in API/domain/application code rather than UI components.
 
 ## Project Structure
 
@@ -317,6 +321,7 @@ Formica.slnx
 ├── Formica.AppHost/
 ├── Formica.ServiceDefaults/
 ├── Formica.ApiService/
+├── Formica.WebApp/
 ├── Formica.Web/
 └── Formica.Tests/
 ```
@@ -345,12 +350,16 @@ Formica.ApiService/
         │   └── WarehouseLayout/
         └── Endpoints/
 
-Formica.Web/
+Formica.WebApp/
 └── Warehouse/
     └── WarehouseFoundation/
         ├── Pages/
         ├── Components/
         └── ApiClients/
+
+Formica.Web/
+└── Warehouse/
+    └── WarehouseFoundation/        # temporary Bootstrap baseline/migration source only
 
 Formica.Tests/
 └── Warehouse/
@@ -359,7 +368,7 @@ Formica.Tests/
 
 `WarehouseLayout` is the read-oriented capability that presents the configured warehouse as warehouse → zone → storage locations. It is not a separate domain entity.
 
-`ApiClients` are typed wrappers used by the Blazor UI to call `Formica.ApiService` endpoints. They are UI-facing HTTP access helpers, not domain services, integration clients, or business entities.
+`ApiClients` are typed wrappers used by the Blazor UI to call `Formica.ApiService` endpoints. They are UI-facing HTTP access helpers, not domain services, integration clients, or business entities. New Warehouse Foundation UI clients should live under `Formica.WebApp`.
 
 `Formica.AppHost` should orchestrate PostgreSQL for local development and integration testing once persistence is added.
 
@@ -376,7 +385,7 @@ Required research topics:
 1. Confirm PostgreSQL/Npgsql package and Aspire orchestration setup.
 2. Confirm Warehouse-level persistence boundary under `Formica.ApiService/Warehouse/Persistence` and Warehouse Foundation feature boundary under `Formica.ApiService/Warehouse/WarehouseFoundation`.
 3. Confirm Minimal API endpoint grouping conventions in `Formica.ApiService`.
-4. Confirm Blazor routing/component placement conventions in `Formica.Web`.
+4. Confirm Blazor routing/component placement conventions in `Formica.WebApp`.
 5. Confirm test style in `Formica.Tests`: integration-first through Aspire, domain tests, API behavior tests, or a pragmatic mix.
 6. Confirm initial representation of configurable location address rules.
 7. Confirm whether optional capacity attributes are simple scalar fields or value-object-style concepts.

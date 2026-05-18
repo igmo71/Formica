@@ -246,15 +246,19 @@ Design-time EF Core infrastructure must not hardcode a local PostgreSQL username
 
 ## Warehouse Foundation UI Workspace Pattern
 
-Warehouse Foundation UI should be organized as a setup workspace around the selected warehouse, not as a growing set of permanently visible CRUD forms.
+Warehouse Foundation UI should be organized in `Formica.WebApp` as a MudBlazor-based setup workspace around the selected warehouse, not as a growing set of permanently visible CRUD forms.
 
 Child resources such as Zones and Storage Locations should be managed in contextual sections or tabs under the selected warehouse context.
 
-For the current Bootstrap milestone, create/edit forms should not remain permanently visible when they are not being used. Prefer hidden or collapsible editors for create/edit workflows.
+Create/edit forms should not remain permanently visible when they are not being used. Prefer MudBlazor dialogs, drawers, tabs, expansion panels, or otherwise contextual editors for create/edit workflows.
 
-The UI structure should remain compatible with a future move to dialog, drawer, tabs, and table/data-grid components if a separate UI foundation decision introduces a component library.
+MudBlazor is the approved UI component library for Warehouse Foundation in `Formica.WebApp`. Use it for expected administration UI patterns such as tables, forms, validation presentation, status indicators, dialogs/drawers, tabs, and workspace navigation.
 
-The current milestone remains Bootstrap-only. Do not introduce MudBlazor or another UI component library without a separate explicit UI foundation decision.
+Do not split new Warehouse Foundation UI feature work between `Formica.Web` and `Formica.WebApp`. `Formica.Web` is a temporary Bootstrap baseline/migration source only; new UI work belongs in `Formica.WebApp`.
+
+UI components must not contain business rules. Keep business validation and state transitions in API/domain/application behavior, keep `ApiClients` as thin HTTP wrappers, and keep Domain independent from Blazor and MudBlazor.
+
+Do not introduce another UI component library without a separate explicit UI foundation decision.
 
 ## Agent Validation Command Policy
 
